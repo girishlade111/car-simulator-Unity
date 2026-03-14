@@ -5,6 +5,7 @@ public class MainMenu : MonoBehaviour
 {
     [Header("Main Buttons")]
     [SerializeField] private Button m_newGameButton;
+    [SerializeField] private Button m_continueButton;
     [SerializeField] private Button m_loadGameButton;
     [SerializeField] private Button m_garageButton;
     [SerializeField] private Button m_settingsButton;
@@ -89,8 +90,6 @@ public class MainMenu : MonoBehaviour
             Bootstrap.NewGame();
         }
     }
-
-    private Button m_continueButton;
 
     public void OnContinue()
     {
