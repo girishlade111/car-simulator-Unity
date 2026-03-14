@@ -224,6 +224,8 @@ namespace CarSimulator.Vehicle
             parent.gameObject.AddComponent<VehicleController>();
 
             AddEngineAudio(parent.gameObject, physics);
+            AddGearSystem(parent.gameObject, physics);
+            AddTireScreech(parent.gameObject, physics);
         }
 
         private void AddEngineAudio(GameObject vehicle, VehiclePhysics physics)
@@ -246,6 +248,21 @@ namespace CarSimulator.Vehicle
                 WheelParticles particles = particleObj.AddComponent<WheelParticles>();
                 particles.m_wheelCollider = colliders[i];
             }
+        }
+
+        private void AddGearSystem(GameObject vehicle, VehiclePhysics physics)
+        {
+            GearSystem gearSystem = vehicle.AddComponent<GearSystem>();
+            gearSystem.m_vehiclePhysics = physics;
+            gearSystem.m_shiftMode = GearSystem.GearShiftMode.Automatic;
+        }
+
+        private void AddTireScreech(GameObject vehicle, VehiclePhysics physics)
+        {
+            AudioSource audioSource = vehicle.AddComponent<AudioSource>();
+            TireScreechAudio screech = vehicle.AddComponent<TireScreechAudio>();
+            screech.m_vehiclePhysics = physics;
+            screech.m_enableScreech = true;
         }
 
         public void SetTuning(VehicleTuning tuning)
