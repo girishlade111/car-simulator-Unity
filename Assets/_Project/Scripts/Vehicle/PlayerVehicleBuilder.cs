@@ -230,6 +230,7 @@ namespace CarSimulator.Vehicle
             AddTurboBoost(parent.gameObject, physics);
             AddGearShiftAnimation(parent.gameObject);
             AddNitrousOxide(parent.gameObject, physics);
+            AddVehicleDamage(parent.gameObject);
         }
 
         private GearSystem AddGearSystem(GameObject vehicle, VehiclePhysics physics)
@@ -313,6 +314,13 @@ namespace CarSimulator.Vehicle
         public void SetTuning(VehicleTuning tuning)
         {
             m_tuning = tuning;
+        }
+
+        private void AddVehicleDamage(GameObject vehicle)
+        {
+            VehicleDamage damage = vehicle.AddComponent<VehicleDamage>();
+            damage.m_enableDamage = true;
+            damage.m_maxHealth = 100f;
         }
 
         public void SetBodyColor(Color color)
