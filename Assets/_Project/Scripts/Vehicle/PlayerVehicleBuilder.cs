@@ -231,6 +231,7 @@ namespace CarSimulator.Vehicle
             AddGearShiftAnimation(parent.gameObject);
             AddNitrousOxide(parent.gameObject, physics);
             AddVehicleDamage(parent.gameObject);
+            AddVehicleLights(parent.gameObject);
         }
 
         private GearSystem AddGearSystem(GameObject vehicle, VehiclePhysics physics)
@@ -321,6 +322,13 @@ namespace CarSimulator.Vehicle
             VehicleDamage damage = vehicle.AddComponent<VehicleDamage>();
             damage.m_enableDamage = true;
             damage.m_maxHealth = 100f;
+        }
+
+        private void AddVehicleLights(GameObject vehicle)
+        {
+            VehicleLights lights = vehicle.AddComponent<VehicleLights>();
+            lights.m_headlightsOn = true;
+            lights.m_taillightsOn = true;
         }
 
         public void SetBodyColor(Color color)
