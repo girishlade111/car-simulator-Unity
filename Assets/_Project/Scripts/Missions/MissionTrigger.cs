@@ -1,123 +1,68 @@
 using UnityEngine;
 
-public class MissionTrigger : MonoBehaviour
+namespace CarSimulator.Missions
 {
-    [Header("Trigger Settings")]
-    [SerializeField] private string m_missionId;
-    [SerializeField] private TriggerType m_triggerType;
-
-    [Header("Trigger Area")]
-    [SerializeField] private float m_radius = 10f;
-    [SerializeField] private LayerMask m_targetLayer = -1;
-
-    [Header("Display")]
-    [SerializeField] private bool m_showGizmos = true;
-    [SerializeField] private Color m_gizmoColor = Color.yellow;
-
-    [Header("Cooldown")]
-    [SerializeField] private float m_cooldownTime = 5f;
-
-    private bool m_isOnCooldown;
-    private float m_cooldownTimer;
-
-    private enum TriggerType
+    public class MissionTrigger : MonoBehaviour
     {
-        OnEnter,
-        OnExit,
-        OnPress,
-        Automatic
-    }
+        [Header("Settings")]
+        [SerializeField] private string m_missionId;
+        [SerializeField] private TriggerType m_triggerType = TriggerType.OnEnter;
 
-    private void Update()
-    {
-        if (m_isOnCooldown)
+        [Header("Area")]
+        [SerializeField] private float m_radius = 10f;
+
+        public enum TriggerType
         {
-            m_cooldownTimer -= Time.deltaTime;
-            if (m_cooldownTimer <= 0)
-            {
-                m_isOnCooldown = false;
-            }
+            OnEnter,
+            OnExit,
+            OnPress
         }
 
-        if (m_triggerType == TriggerType.OnPress && !m_isOnCooldown)
+        private void OnTriggerEnter(Collider other)
         {
-            CheckPlayerInput();
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (m_triggerType == TriggerType.OnEnter && !m_isOnCooldown)
-        {
-            if (other.CompareTag("Player"))
+            if (m_triggerType == TriggerType.OnEnter && other.CompareTag("Player"))
             {
                 TryStartMission();
             }
         }
-    }
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (m_triggerType == TriggerType.OnExit && !m_isOnCooldown)
+        private void OnTriggerExit(Collider other)
         {
-            if (other.CompareTag("Player"))
+            if (m_triggerType == TriggerType.OnExit && other.CompareTag("Player"))
             {
                 TryStartMission();
             }
         }
-    }
 
-    private void CheckPlayerInput()
-    {
-        if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.F))
+        private void Update()
         {
-            Collider[] colliders = Physics.OverlapSphere(transform.position, m_radius, m_targetLayer);
-            for (int i = 0; i < colliders.Length; i++)
+            if (m_triggerType == TriggerType.OnPress && Input.GetKeyDown(KeyCode.E))
             {
-                if (colliders[i].CompareTag("Player"))
+                Collider[] colliders = Physics.OverlapSphere(transform.position, m_radius);
+                foreach (var collider in colliders)
                 {
-                    TryStartMission();
-                    break;
+                    if (collider.CompareTag("Player"))
+                    {
+                        TryStartMission();
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    private void TryStartMission()
-    {
-        if (MissionManager.Instance == null)
+        private void TryStartMission()
         {
-            Debug.LogWarning("[MissionTrigger] MissionManager not found!");
-            return;
+            if (MissionManager.Instance != null)
+            {
+                MissionManager.Instance.StartMission(m_missionId);
+                Debug.Log($"[MissionTrigger] Started mission: {m_missionId}");
+            }
         }
 
-        if (!MissionManager.Instance.CanStartMission(m_missionId))
+        private void OnDrawGizmos()
         {
-            Debug.Log($"[MissionTrigger] Cannot start mission: {m_missionId}");
-            return;
-        }
-
-        MissionManager.Instance.StartMission(m_missionId);
-        StartCooldown();
-    }
-
-    private void StartCooldown()
-    {
-        m_isOnCooldown = true;
-        m_cooldownTimer = m_cooldownTime;
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (!m_showGizmos) return;
-
-        Gizmos.color = m_gizmoColor;
-        Gizmos.DrawWireSphere(transform.position, m_radius);
-
-        if (GetComponent<Collider>() != null)
-        {
-            Gizmos.color = new Color(m_gizmoColor.r, m_gizmoColor.g, m_gizmoColor.b, 0.3f);
-            Gizmos.DrawCube(transform.position, transform.localScale);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(transform.position, m_radius);
         }
     }
 }
