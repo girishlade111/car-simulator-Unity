@@ -3,7 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class SaveManager : MonoBehaviour
+namespace CarSimulator.SaveSystem
+{
 {
     public static SaveManager Instance { get; private set; }
 
@@ -215,4 +216,5 @@ public class SaveSlotInfo
     public float playTime;
     public DateTime lastPlayed;
     public string scene;
+}
 }

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 
+namespace CarSimulator.SaveSystem
+{
+
 [Serializable]
 public class GameSaveData
 {
