@@ -224,8 +224,19 @@ namespace CarSimulator.Vehicle
             parent.gameObject.AddComponent<VehicleController>();
 
             AddEngineAudio(parent.gameObject, physics);
-            AddGearSystem(parent.gameObject, physics);
+            GearSystem gearSystem = AddGearSystem(parent.gameObject, physics);
             AddTireScreech(parent.gameObject, physics);
+            AddLaunchControl(parent.gameObject, physics, gearSystem);
+            AddTurboBoost(parent.gameObject, physics);
+            AddGearShiftAnimation(parent.gameObject);
+        }
+
+        private GearSystem AddGearSystem(GameObject vehicle, VehiclePhysics physics)
+        {
+            GearSystem gearSystem = vehicle.AddComponent<GearSystem>();
+            gearSystem.m_vehiclePhysics = physics;
+            gearSystem.m_shiftMode = GearSystem.GearShiftMode.Automatic;
+            return gearSystem;
         }
 
         private void AddEngineAudio(GameObject vehicle, VehiclePhysics physics)
@@ -250,19 +261,45 @@ namespace CarSimulator.Vehicle
             }
         }
 
-        private void AddGearSystem(GameObject vehicle, VehiclePhysics physics)
-        {
-            GearSystem gearSystem = vehicle.AddComponent<GearSystem>();
-            gearSystem.m_vehiclePhysics = physics;
-            gearSystem.m_shiftMode = GearSystem.GearShiftMode.Automatic;
-        }
-
         private void AddTireScreech(GameObject vehicle, VehiclePhysics physics)
         {
             AudioSource audioSource = vehicle.AddComponent<AudioSource>();
             TireScreechAudio screech = vehicle.AddComponent<TireScreechAudio>();
             screech.m_vehiclePhysics = physics;
             screech.m_enableScreech = true;
+        }
+
+        private void AddLaunchControl(GameObject vehicle, VehiclePhysics physics, GearSystem gearSystem)
+        {
+            LaunchControl launch = vehicle.AddComponent<LaunchControl>();
+            launch.m_vehiclePhysics = physics;
+            launch.m_gearSystem = gearSystem;
+            launch.m_enableLaunchControl = true;
+        }
+
+        private void AddTurboBoost(GameObject vehicle, VehiclePhysics physics)
+        {
+            TurboBoost turbo = vehicle.AddComponent<TurboBoost>();
+            turbo.m_vehiclePhysics = physics;
+            turbo.m_enableBoost = true;
+
+            GameObject boostLight = new GameObject("BoostLight");
+            boostLight.transform.SetParent(vehicle.transform);
+            boostLight.transform.localPosition = new Vector3(0, 0.5f, -2f);
+            
+            Light light = boostLight.AddComponent<Light>();
+            light.color = Color.cyan;
+            light.range = 5f;
+            light.intensity = 0f;
+
+            turbo.m_boostLight = light;
+        }
+
+        private void AddGearShiftAnimation(GameObject vehicle)
+        {
+            GearShiftAnimation shiftAnim = vehicle.AddComponent<GearShiftAnimation>();
+            shiftAnim.m_enableAnimation = true;
+            shiftAnim.m_shiftDuration = 0.3f;
         }
 
         public void SetTuning(VehicleTuning tuning)
