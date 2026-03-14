@@ -331,6 +331,28 @@ namespace CarSimulator.Vehicle
             lights.m_taillightsOn = true;
         }
 
+        private void AddNeonUnderglow(GameObject vehicle)
+        {
+            NeonUnderglow neon = vehicle.AddComponent<NeonUnderglow>();
+            neon.m_enabled = true;
+            neon.m_neonColor = Color.cyan;
+        }
+
+        private void AddCarHorn(GameObject vehicle)
+        {
+            CarHorn horn = vehicle.AddComponent<CarHorn>();
+            horn.m_hornEnabled = true;
+            horn.m_hornKey = KeyCode.H;
+        }
+
+        private void AddWindshieldEffects(GameObject vehicle)
+        {
+            WindshieldEffects windshield = vehicle.AddComponent<WindshieldEffects>();
+            windshield.m_enableRain = true;
+            windshield.m_enableDirt = true;
+            windshield.m_enableFog = true;
+        }
+
         public void SetBodyColor(Color color)
         {
             m_bodyColor = color;
