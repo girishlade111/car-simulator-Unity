@@ -239,6 +239,22 @@ namespace CarSimulator.Vehicle
             AddMirrors(parent.gameObject);
             AddCarRadio(parent.gameObject);
             AddVehicleWrap(parent.gameObject);
+            AddWindowTint(parent.gameObject);
+            AddBodyKit(parent.gameObject);
+        }
+
+        private void AddWindowTint(GameObject vehicle)
+        {
+            WindowTint tint = vehicle.AddComponent<WindowTint>();
+            tint.m_enableTinting = true;
+            tint.SetTintLevel(WindowTint.TintLevel.Light);
+        }
+
+        private void AddBodyKit(GameObject vehicle)
+        {
+            BodyKit bodyKit = vehicle.AddComponent<BodyKit>();
+            bodyKit.m_enableBodyKit = true;
+            bodyKit.m_currentKit = BodyKit.BodyKitType.Stock;
         }
 
         private void AddVehicleWrap(GameObject vehicle)
