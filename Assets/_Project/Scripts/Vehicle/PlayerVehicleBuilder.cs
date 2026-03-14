@@ -237,131 +237,13 @@ namespace CarSimulator.Vehicle
             AddWindshieldEffects(parent.gameObject);
             AddCrashSounds(parent.gameObject);
             AddMirrors(parent.gameObject);
+            AddCarRadio(parent.gameObject);
         }
 
-        private GearSystem AddGearSystem(GameObject vehicle, VehiclePhysics physics)
+        private void AddCarRadio(GameObject vehicle)
         {
-            GearSystem gearSystem = vehicle.AddComponent<GearSystem>();
-            gearSystem.m_vehiclePhysics = physics;
-            gearSystem.m_shiftMode = GearSystem.GearShiftMode.Automatic;
-            return gearSystem;
-        }
-
-        private void AddEngineAudio(GameObject vehicle, VehiclePhysics physics)
-        {
-            AudioSource audioSource = vehicle.AddComponent<AudioSource>();
-            
-            EngineAudio engineAudio = vehicle.AddComponent<EngineAudio>();
-            engineAudio.m_vehiclePhysics = physics;
-            engineAudio.m_enableEngineSound = true;
-        }
-
-        private void AddWheelParticles(Transform parent, WheelCollider[] colliders)
-        {
-            for (int i = 0; i < colliders.Length; i++)
-            {
-                GameObject particleObj = new GameObject($"WheelParticles_{i}");
-                particleObj.transform.SetParent(parent);
-                particleObj.transform.localPosition = colliders[i].transform.localPosition;
-
-                WheelParticles particles = particleObj.AddComponent<WheelParticles>();
-                particles.m_wheelCollider = colliders[i];
-            }
-        }
-
-        private void AddTireScreech(GameObject vehicle, VehiclePhysics physics)
-        {
-            AudioSource audioSource = vehicle.AddComponent<AudioSource>();
-            TireScreechAudio screech = vehicle.AddComponent<TireScreechAudio>();
-            screech.m_vehiclePhysics = physics;
-            screech.m_enableScreech = true;
-        }
-
-        private void AddLaunchControl(GameObject vehicle, VehiclePhysics physics, GearSystem gearSystem)
-        {
-            LaunchControl launch = vehicle.AddComponent<LaunchControl>();
-            launch.m_vehiclePhysics = physics;
-            launch.m_gearSystem = gearSystem;
-            launch.m_enableLaunchControl = true;
-        }
-
-        private void AddTurboBoost(GameObject vehicle, VehiclePhysics physics)
-        {
-            TurboBoost turbo = vehicle.AddComponent<TurboBoost>();
-            turbo.m_vehiclePhysics = physics;
-            turbo.m_enableBoost = true;
-
-            GameObject boostLight = new GameObject("BoostLight");
-            boostLight.transform.SetParent(vehicle.transform);
-            boostLight.transform.localPosition = new Vector3(0, 0.5f, -2f);
-            
-            Light light = boostLight.AddComponent<Light>();
-            light.color = Color.cyan;
-            light.range = 5f;
-            light.intensity = 0f;
-
-            turbo.m_boostLight = light;
-        }
-
-        private void AddGearShiftAnimation(GameObject vehicle)
-        {
-            GearShiftAnimation shiftAnim = vehicle.AddComponent<GearShiftAnimation>();
-            shiftAnim.m_enableAnimation = true;
-            shiftAnim.m_shiftDuration = 0.3f;
-        }
-
-        private void AddNitrousOxide(GameObject vehicle, VehiclePhysics physics)
-        {
-            NitrousOxide nitrous = vehicle.AddComponent<NitrousOxide>();
-            nitrous.m_vehiclePhysics = physics;
-            nitrous.m_enableNitrous = true;
-        }
-
-        public void SetTuning(VehicleTuning tuning)
-        {
-            m_tuning = tuning;
-        }
-
-        private void AddVehicleDamage(GameObject vehicle)
-        {
-            VehicleDamage damage = vehicle.AddComponent<VehicleDamage>();
-            damage.m_enableDamage = true;
-            damage.m_maxHealth = 100f;
-        }
-
-        private void AddVehicleLights(GameObject vehicle)
-        {
-            VehicleLights lights = vehicle.AddComponent<VehicleLights>();
-            lights.m_headlightsOn = true;
-            lights.m_taillightsOn = true;
-        }
-
-        private void AddNeonUnderglow(GameObject vehicle)
-        {
-            NeonUnderglow neon = vehicle.AddComponent<NeonUnderglow>();
-            neon.m_enabled = true;
-            neon.m_neonColor = Color.cyan;
-        }
-
-        private void AddCarHorn(GameObject vehicle)
-        {
-            CarHorn horn = vehicle.AddComponent<CarHorn>();
-            horn.m_hornEnabled = true;
-            horn.m_hornKey = KeyCode.H;
-        }
-
-        private void AddWindshieldEffects(GameObject vehicle)
-        {
-            WindshieldEffects windshield = vehicle.AddComponent<WindshieldEffects>();
-            windshield.m_enableRain = true;
-            windshield.m_enableDirt = true;
-            windshield.m_enableFog = true;
-        }
-
-        private void AddCrashSounds(GameObject vehicle)
-        {
-            CrashSounds crash = vehicle.AddComponent<CrashSounds>();
-            crash.m_enableCrashSounds = true;
+            CarRadio radio = vehicle.AddComponent<CarRadio>();
+            radio.m_radioEnabled = true;
         }
 
         private void AddMirrors(GameObject vehicle)
