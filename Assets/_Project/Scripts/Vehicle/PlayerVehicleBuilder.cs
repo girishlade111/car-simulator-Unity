@@ -229,6 +229,7 @@ namespace CarSimulator.Vehicle
             AddLaunchControl(parent.gameObject, physics, gearSystem);
             AddTurboBoost(parent.gameObject, physics);
             AddGearShiftAnimation(parent.gameObject);
+            AddNitrousOxide(parent.gameObject, physics);
         }
 
         private GearSystem AddGearSystem(GameObject vehicle, VehiclePhysics physics)
@@ -300,6 +301,13 @@ namespace CarSimulator.Vehicle
             GearShiftAnimation shiftAnim = vehicle.AddComponent<GearShiftAnimation>();
             shiftAnim.m_enableAnimation = true;
             shiftAnim.m_shiftDuration = 0.3f;
+        }
+
+        private void AddNitrousOxide(GameObject vehicle, VehiclePhysics physics)
+        {
+            NitrousOxide nitrous = vehicle.AddComponent<NitrousOxide>();
+            nitrous.m_vehiclePhysics = physics;
+            nitrous.m_enableNitrous = true;
         }
 
         public void SetTuning(VehicleTuning tuning)
