@@ -1,6 +1,7 @@
 using UnityEngine;
 
-public class DistrictManager : MonoBehaviour
+namespace CarSimulator.World
+{
 {
     public static DistrictManager Instance { get; private set; }
 
@@ -124,4 +125,5 @@ public class DistrictManager : MonoBehaviour
     {
         DrawDebugGizmos();
     }
+}
 }
