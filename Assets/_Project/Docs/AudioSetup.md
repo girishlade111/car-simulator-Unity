@@ -1,131 +1,94 @@
-# Audio Setup Guide
+# Audio System Setup Guide
 
-This guide explains how to set up audio in your car simulator.
+## Music Manager
 
----
+### Setup
+1. Add `MusicManager` to scene (auto-created by Bootstrap)
+2. Add Audio Source component
+3. Add tracks to Tracks array
 
-## Generating Placeholder Audio
+### Creating Tracks
+1. Create audio clips in `Assets/_Project/Audio/Music/`
+2. In MusicManager Inspector:
+   - Click + to add track
+   - Set name (e.g., "Menu", "Driving")
+   - Assign AudioClip
 
-### Option 1: Use AudioGenerator (Editor)
-
-1. In Unity Editor, go to menu: **CarSimulator → Audio → Generate Placeholder Audio**
-2. This creates basic WAV files in `Assets/_Project/Audio/`
-
-### Option 2: Manual Audio Files
-
-Create audio files in `Assets/_Project/Audio/`:
-
-| Folder | Files Needed |
-|--------|--------------|
-| `SFX/` | EngineLoop.wav, TireScreech.wav, Collision.wav, Horn.wav, Checkpoint.wav |
-| `Music/` | Menu.wav, OpenWorld.wav, Mission.wav, Garage.wav |
-
-### Recommended Audio Settings
-
-- **Sample Rate**: 44100 Hz
-- **Channels**: Stereo for music, Mono for SFX
-- **Bit Depth**: 16-bit or 24-bit
+### Usage
+```csharp
+MusicManager.Instance.PlayTrack("Menu");
+MusicManager.Instance.SetVolume(0.5f);
+MusicManager.Instance.Pause();
+```
 
 ---
 
-## Setting Up MusicManager
+## SFX Manager
 
-1. Add `MusicManager` to your scene (or use Bootstrap auto-creation)
-2. In Inspector, expand **Music Tracks** array
-3. Add tracks with these names:
-   - `Menu` - Background music for main menu
-   - `OpenWorld` - Music for driving
-   - `Mission` - Music during missions
-   - `Garage` - Music for garage scene
+### Setup
+1. Add `SFXManager` to scene
+2. Add SFX Library entries
 
-4. Assign AudioClips to each track
+### Creating SFX
+1. Add audio clips to `Assets/_Project/Audio/SFX/`
+2. Add entries to SFX Library:
+   - Name: "Engine", "Horn", "Tire", etc.
+   - Clip: Drag audio file
 
----
-
-## Setting Up SFXManager
-
-1. Add `SFXManager` to your scene
-2. In Inspector, expand **SFX Library** array
-3. Add entries:
-
-| Name | Recommended Clip | Loop |
-|------|------------------|------|
-| Engine | EngineLoop.wav | ✓ |
-| TireScreech | TireScreech.wav | ✓ |
-| Collision | Collision.wav | ✗ |
-| Horn | Horn.wav | ✗ |
-| Checkpoint | Checkpoint.wav | ✗ |
-| MissionComplete | MissionComplete.wav | ✗ |
-| MenuClick | MenuClick.wav | ✗ |
+### Usage
+```csharp
+SFXManager.Instance.PlaySFX("Horn");
+SFXManager.Instance.PlaySFX("Tire", transform.position);
+```
 
 ---
 
-## Setting Up VehicleAudio
+## Vehicle Audio
 
-1. Select your **PlayerCar** GameObject
+### Setup
+1. Select PlayerCar
 2. Add `VehicleAudio` component
 3. Assign audio clips:
+   - Engine Clip: Looping engine sound
+   - Tire Clip: Looping tire screech
+   - Horn Clip: Single honk sound
+4. Component auto-links to VehiclePhysics
 
-| Field | Clip |
-|-------|------|
-| Engine Clip | EngineLoop.wav |
-| Tire Screech Clip | TireScreech.wav |
-| Horn Clip | Horn.wav |
-| Collision Clips | Collision.wav (add multiple) |
+### Parameters
+- Min Engine Pitch: 0.5 (idle)
+- Max Engine Pitch: 2.0 (top speed)
+- Engine Volume: 0.8
+- Tire Volume: 0.5
 
-4. Configure:
-   - Engine Volume: 0.8
-   - Tire Volume: 0.5
-   - Min Engine Pitch: 0.5
-   - Max Engine Pitch: 2.0
+### Controls
+- H: Horn
+- Shift: Tire screech
 
 ---
 
-## Audio Constants
+## Audio Files
 
-Use these constants in code:
+Create folder: `Assets/_Project/Audio/`
 
-```csharp
-// SFX
-SFXManager.Instance.PlaySFX(AudioConstants.SFX_ENGINE);
-SFXManager.Instance.PlaySFX(AudioConstants.SFX_HORN);
-SFXManager.Instance.PlaySFX(AudioConstants.SFX_COLLISION);
-
-// Music
-MusicManager.Instance.PlayTrack(AudioConstants.MUSIC_OPENWORLD);
-MusicManager.Instance.SetVolume(0.5f);
+### Recommended Structure
+```
+Audio/
+├── Music/
+│   ├── Menu.wav
+│   └── Driving.wav
+└── SFX/
+    ├── Engine.wav
+    ├── Horn.wav
+    └── Tire.wav
 ```
 
 ---
 
-## Volume Settings
+## Settings Integration
 
-Control volume through SettingsPersistence:
-
+Audio settings connect to SettingsPersistence:
 ```csharp
-SettingsPersistence.Instance.UpdateMasterVolume(0.8f);
-SettingsPersistence.Instance.UpdateMusicVolume(0.5f);
-SettingsPersistence.Instance.UpdateSFXVolume(1f);
+// In SettingsController
+MusicManager.Instance.SetVolume(settings.audio.musicVolume);
+SFXManager.Instance.SetVolume(settings.audio.sfxVolume);
 ```
-
----
-
-## Troubleshooting
-
-**No sound playing?**
-- Check AudioListener on Main Camera
-- Verify AudioSource components are enabled
-- Check volume levels in SettingsPersistence
-
-**Audio missing warnings?**
-- Add AudioMissingHandler to scene
-- It will log missing audio references
-
----
-
-## Next Steps
-
-1. Generate placeholder audio with AudioGenerator
-2. Assign clips to MusicManager and SFXManager
-3. Add VehicleAudio to player car
-4. Test audio in gameplay

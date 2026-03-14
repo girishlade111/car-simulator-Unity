@@ -1,247 +1,105 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-public class SFXManager : MonoBehaviour
+namespace CarSimulator.Audio
 {
-    public static SFXManager Instance { get; private set; }
-
-    [Header("Settings")]
-    [SerializeField] private int m_poolSize = 20;
-    [SerializeField] private float m_defaultVolume = 1f;
-
-    [Header("SFX Library")]
-    [SerializeField] private SFXEntry[] m_sfxLibrary;
-
-    private Dictionary<string, AudioSource> m_playingSFX;
-    private List<AudioSource> m_sourcePool;
-    private float m_volume = 1f;
-
-    [System.Serializable]
-    public class SFXEntry
+    public class SFXManager : MonoBehaviour
     {
-        public string name;
-        public AudioClip clip;
-        [Range(0f, 1f)] public float volume = 1f;
-        public bool loop = false;
-    }
+        public static SFXManager Instance { get; private set; }
 
-    private void Awake()
-    {
-        if (Instance != null)
+        [Header("Settings")]
+        [SerializeField] private float m_volume = 1f;
+        [SerializeField] private int m_poolSize = 20;
+
+        [Header("SFX Library")]
+        [SerializeField] private SFXEntry[] m_sfxLibrary;
+
+        private AudioSource[] m_sourcePool;
+        private int m_currentSource;
+
+        [System.Serializable]
+        public class SFXEntry
         {
-            Destroy(gameObject);
-            return;
+            public string name;
+            public AudioClip clip;
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-
-        m_playingSFX = new Dictionary<string, AudioSource>();
-        InitializePool();
-    }
-
-    private void InitializePool()
-    {
-        m_sourcePool = new List<AudioSource>();
-
-        for (int i = 0; i < m_poolSize; i++)
+        private void Awake()
         {
-            AudioSource source = gameObject.AddComponent<AudioSource>();
-            source.playOnAwake = false;
-            source.loop = false;
-            source.spatialBlend = 0f;
-            source.volume = m_defaultVolume;
-            source.enabled = false;
-            m_sourcePool.Add(source);
-        }
-    }
-
-    private AudioSource GetSourceFromPool()
-    {
-        for (int i = 0; i < m_sourcePool.Count; i++)
-        {
-            if (!m_sourcePool[i].enabled || !m_sourcePool[i].isPlaying)
+            if (Instance == null)
             {
-                m_sourcePool[i].enabled = true;
-                return m_sourcePool[i];
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
             }
-        }
-
-        AudioSource newSource = gameObject.AddComponent<AudioSource>();
-        newSource.playOnAwake = false;
-        newSource.spatialBlend = 0f;
-        m_sourcePool.Add(newSource);
-        return newSource;
-    }
-
-    public void PlaySFX(string sfxName)
-    {
-        PlaySFX(sfxName, Vector3.zero, 1f);
-    }
-
-    public void PlaySFX(string sfxName, float volumeMultiplier)
-    {
-        PlaySFX(sfxName, Vector3.zero, volumeMultiplier);
-    }
-
-    public void PlaySFX(string sfxName, Vector3 position)
-    {
-        PlaySFX(sfxName, position, 1f);
-    }
-
-    public void PlaySFX(string sfxName, Vector3 position, float volumeMultiplier)
-    {
-        if (m_sfxLibrary == null) return;
-
-        SFXEntry entry = null;
-        for (int i = 0; i < m_sfxLibrary.Length; i++)
-        {
-            if (m_sfxLibrary[i].name == sfxName)
+            else
             {
-                entry = m_sfxLibrary[i];
-                break;
-            }
-        }
-
-        if (entry == null || entry.clip == null)
-        {
-            Debug.LogWarning($"[SFXManager] SFX not found: {sfxName}");
-            return;
-        }
-
-        AudioSource source = GetSourceFromPool();
-        source.clip = entry.clip;
-        source.loop = entry.loop;
-        source.volume = m_volume * entry.volume * volumeMultiplier;
-        source.transform.position = position;
-
-        if (position != Vector3.zero)
-        {
-            source.spatialBlend = 1f;
-            source.minDistance = 1f;
-            source.maxDistance = 50f;
-        }
-        else
-        {
-            source.spatialBlend = 0f;
-        }
-
-        source.Play();
-
-        if (!entry.loop)
-        {
-            StartCoroutine(DisableSourceAfterPlay(source, entry.clip.length));
-        }
-    }
-
-    private System.Collections.IEnumerator DisableSourceAfterPlay(AudioSource source, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        source.enabled = false;
-    }
-
-    public void PlaySFXOneShot(string sfxName)
-    {
-        PlaySFXOneShot(sfxName, 1f);
-    }
-
-    public void PlaySFXOneShot(string sfxName, float volumeMultiplier)
-    {
-        if (m_sfxLibrary == null) return;
-
-        for (int i = 0; i < m_sfxLibrary.Length; i++)
-        {
-            if (m_sfxLibrary[i].name == sfxName && m_sfxLibrary[i].clip != null)
-            {
-                AudioSource.PlayClipAtPoint(
-                    m_sfxLibrary[i].clip, 
-                    Vector3.zero, 
-                    m_volume * m_sfxLibrary[i].volume * volumeMultiplier
-                );
+                Destroy(gameObject);
                 return;
             }
+
+            InitializePool();
         }
 
-        Debug.LogWarning($"[SFXManager] SFX not found: {sfxName}");
-    }
-
-    public void PlaySFXAtPosition(string sfxName, Vector3 position)
-    {
-        PlaySFXAtPosition(sfxName, position, 1f);
-    }
-
-    public void PlaySFXAtPosition(string sfxName, Vector3 position, float volumeMultiplier)
-    {
-        if (m_sfxLibrary == null) return;
-
-        for (int i = 0; i < m_sfxLibrary.Length; i++)
+        private void InitializePool()
         {
-            if (m_sfxLibrary[i].name == sfxName && m_sfxLibrary[i].clip != null)
+            m_sourcePool = new AudioSource[m_poolSize];
+            for (int i = 0; i < m_poolSize; i++)
             {
-                AudioSource.PlayClipAtPoint(
-                    m_sfxLibrary[i].clip,
-                    position,
-                    m_volume * m_sfxLibrary[i].volume * volumeMultiplier
-                );
-                return;
+                m_sourcePool[i] = gameObject.AddComponent<AudioSource>();
+                m_sourcePool[i].playOnAwake = false;
+                m_sourcePool[i].spatialBlend = 0f;
             }
         }
 
-        Debug.LogWarning($"[SFXManager] SFX not found: {sfxName}");
-    }
-
-    public void StopSFX(string sfxName)
-    {
-        if (m_playingSFX.ContainsKey(sfxName))
+        public void PlaySFX(string sfxName)
         {
-            m_playingSFX[sfxName].Stop();
-            m_playingSFX[sfxName].enabled = false;
-            m_playingSFX.Remove(sfxName);
+            PlaySFX(sfxName, Vector3.zero, 1f);
         }
-    }
 
-    public void StopAllSFX()
-    {
-        for (int i = 0; i < m_sourcePool.Count; i++)
+        public void PlaySFX(string sfxName, float volumeMultiplier)
         {
-            m_sourcePool[i].Stop();
-            m_sourcePool[i].enabled = false;
+            PlaySFX(sfxName, Vector3.zero, volumeMultiplier);
         }
-        m_playingSFX.Clear();
-    }
 
-    public void SetVolume(float volume)
-    {
-        m_volume = Mathf.Clamp01(volume);
-    }
-
-    public float Volume => m_volume;
-
-    public void SetSFXVolume(string sfxName, float volume)
-    {
-        if (m_sfxLibrary == null) return;
-
-        for (int i = 0; i < m_sfxLibrary.Length; i++)
+        public void PlaySFX(string sfxName, Vector3 position)
         {
-            if (m_sfxLibrary[i].name == sfxName)
+            PlaySFX(sfxName, position, 1f);
+        }
+
+        public void PlaySFX(string sfxName, Vector3 position, float volumeMultiplier)
+        {
+            if (m_sfxLibrary == null) return;
+
+            SFXEntry entry = null;
+            foreach (var sfx in m_sfxLibrary)
             {
-                m_sfxLibrary[i].volume = Mathf.Clamp01(volume);
-                return;
+                if (sfx.name == sfxName)
+                {
+                    entry = sfx;
+                    break;
+                }
             }
+
+            if (entry == null || entry.clip == null) return;
+
+            AudioSource source = GetNextSource();
+            source.clip = entry.clip;
+            source.volume = m_volume * volumeMultiplier;
+            source.transform.position = position;
+            source.spatialBlend = position != Vector3.zero ? 1f : 0f;
+            source.Play();
         }
-    }
 
-    public bool HasSFX(string sfxName)
-    {
-        if (m_sfxLibrary == null) return false;
-
-        for (int i = 0; i < m_sfxLibrary.Length; i++)
+        private AudioSource GetNextSource()
         {
-            if (m_sfxLibrary[i].name == sfxName)
-            {
-                return true;
-            }
+            m_currentSource = (m_currentSource + 1) % m_poolSize;
+            return m_sourcePool[m_currentSource];
         }
-        return false;
+
+        public void SetVolume(float volume)
+        {
+            m_volume = Mathf.Clamp01(volume);
+        }
+
+        public float Volume => m_volume;
     }
 }
