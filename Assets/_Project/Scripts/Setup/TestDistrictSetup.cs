@@ -73,14 +73,35 @@ namespace CarSimulator.Setup
             var followCam = FindObjectOfType<Camera.FollowCamera>();
             if (followCam == null)
             {
-                Debug.LogWarning("[TestDistrictSetup] No FollowCamera found. Add one to the scene for camera tracking.");
-                return;
+                followCam = CreateFollowCamera();
             }
 
-            if (m_vehicleSpawner != null && m_vehicleSpawner.VehicleTransform != null)
+            followCam.FindTarget();
+        }
+
+        private Camera.FollowCamera CreateFollowCamera()
+        {
+            Camera mainCam = Camera.main;
+            if (mainCam == null)
             {
-                followCam.Target = m_vehicleSpawner.VehicleTransform;
+                GameObject camObj = new GameObject("Main Camera");
+                mainCam = camObj.AddComponent<Camera>();
+                camObj.AddComponent<AudioListener>();
             }
+
+            mainCam.tag = "MainCamera";
+            mainCam.gameObject.tag = "Untagged";
+
+            GameObject camHolder = new GameObject("FollowCamera");
+            Camera newCam = mainCam;
+            newCam.transform.SetParent(camHolder.transform);
+            newCam.transform.localPosition = Vector3.zero;
+            newCam.transform.localRotation = Quaternion.identity;
+
+            Camera.FollowCamera followCam = camHolder.AddComponent<Camera.FollowCamera>();
+            followCam.SetTarget(m_vehicleSpawner != null ? m_vehicleSpawner.VehicleTransform : null);
+
+            return followCam;
         }
     }
 }

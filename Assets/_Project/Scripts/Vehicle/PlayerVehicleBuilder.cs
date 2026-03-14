@@ -102,6 +102,7 @@ namespace CarSimulator.Vehicle
                 WheelCollider frontCollider = frontColliderObj.AddComponent<WheelCollider>();
                 frontCollider.radius = m_wheelRadius;
                 frontCollider.width = m_wheelWidth;
+                ConfigureWheelCollider(frontCollider);
                 frontWheels[i] = frontCollider;
             }
 
@@ -115,6 +116,7 @@ namespace CarSimulator.Vehicle
                 WheelCollider rearCollider = rearColliderObj.AddComponent<WheelCollider>();
                 rearCollider.radius = m_wheelRadius;
                 rearCollider.width = m_wheelWidth;
+                ConfigureWheelCollider(rearCollider);
                 rearWheels[i] = rearCollider;
             }
 
@@ -123,6 +125,27 @@ namespace CarSimulator.Vehicle
             {
                 visuals[i].m_wheelMesh = wheelMeshes[i];
             }
+        }
+
+        private void ConfigureWheelCollider(WheelCollider collider)
+        {
+            WheelFrictionCurve curve = collider.forwardFriction;
+            curve.stiffness = 1f;
+            curve.asymptoteValue = 0.5f;
+            curve.asymptoteSlope = 0.1f;
+            curve.extremumValue = 1f;
+            curve.extremumSlope = 0.1f;
+            collider.forwardFriction = curve;
+
+            curve = collider.sideFriction;
+            curve.stiffness = 1f;
+            curve.asymptoteValue = 0.5f;
+            curve.asymptoteSlope = 0.1f;
+            curve.extremumValue = 1f;
+            curve.extremumSlope = 0.1f;
+            collider.sideFriction = curve;
+
+            collider.alignedFriction = 0.1f;
         }
 
         private void AddVehicleComponents(Transform parent)

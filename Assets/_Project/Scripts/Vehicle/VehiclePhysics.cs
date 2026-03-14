@@ -30,6 +30,23 @@ namespace CarSimulator.Vehicle
             {
                 m_rb.centerOfMass = m_centerOfMass.localPosition;
             }
+
+            SetupSuspension();
+        }
+
+        private void SetupSuspension()
+        {
+            if (m_tuning == null) return;
+
+            WheelCollider[] allWheels = GetComponentsInChildren<WheelCollider>();
+            foreach (var wheel in allWheels)
+            {
+                JointSpring spring = wheel.suspensionSpring;
+                spring.spring = m_tuning.suspensionSpring;
+                spring.damper = m_tuning.suspensionDamper;
+                wheel.suspensionSpring = spring;
+                wheel.suspensionDistance = m_tuning.suspensionDistance;
+            }
         }
 
         private void FixedUpdate()
