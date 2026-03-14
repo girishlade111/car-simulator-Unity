@@ -1,43 +1,33 @@
-public static class SceneNavigator
+using CarSimulator.Runtime;
+using CarSimulator.Bootstrap;
+
+namespace CarSimulator.Core
 {
-    public static void GoToMainMenu()
+    public static class SceneNavigator
     {
-        Bootstrap.GoToMainMenu();
-    }
+        public static void GoToMainMenu()
+        {
+            SceneLoader.Load(GameConstants.DEFAULT_SCENE);
+        }
 
-    public static void GoToOpenWorld()
-    {
-        Bootstrap.GoToOpenWorld();
-    }
+        public static void GoToOpenWorld()
+        {
+            SceneLoader.Load(GameConstants.OPEN_WORLD_SCENE);
+        }
 
-    public static void GoToGarage()
-    {
-        Bootstrap.GoToGarage();
-    }
+        public static void GoToGarage()
+        {
+            SceneLoader.Load(GameConstants.GARAGE_SCENE);
+        }
 
-    public static void RestartCurrentScene()
-    {
-        var currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        Bootstrap.LoadScene(currentScene);
-    }
+        public static void Restart()
+        {
+            SceneLoader.ReloadCurrent();
+        }
 
-    public static void LoadScene(string sceneName)
-    {
-        Bootstrap.LoadScene(sceneName);
-    }
-
-    public static void SaveGame(int slotIndex, string saveName)
-    {
-        Bootstrap.SaveGame(slotIndex, saveName);
-    }
-
-    public static void LoadGame(int slotIndex)
-    {
-        Bootstrap.LoadGame(slotIndex);
-    }
-
-    public static void NewGame()
-    {
-        Bootstrap.NewGame();
+        public static void Load(string sceneName)
+        {
+            SceneLoader.Load(sceneName);
+        }
     }
 }

@@ -1,85 +1,91 @@
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace CarSimulator.Core
 {
-    public static GameManager Instance { get; private set; }
-
-    public enum GameState
+    public class GameManager : MonoBehaviour
     {
-        Menu,
-        Playing,
-        Paused,
-        Loading
-    }
-
-    [SerializeField] private GameState m_currentState = GameState.Menu;
-
-    public GameState CurrentState => m_currentState;
-    public bool IsPaused => m_currentState == GameState.Paused;
-    public bool IsPlaying => m_currentState == GameState.Playing;
-
-    private void Awake()
-    {
-        if (Instance != null)
+        public enum GameState
         {
-            Destroy(gameObject);
-            return;
+            None,
+            Loading,
+            Menu,
+            Playing,
+            Paused
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
+        private static GameManager s_instance;
+        public static GameManager Instance => s_instance;
 
-    public void SetState(GameState newState)
-    {
-        if (m_currentState == newState) return;
+        private GameState m_state = GameState.None;
+        private float m_timeScale = 1f;
 
-        m_currentState = newState;
-        OnStateChanged(newState);
-    }
+        public GameState State => m_state;
+        public bool IsPaused => m_state == GameState.Paused;
+        public bool IsPlaying => m_state == GameState.Playing;
 
-    private void OnStateChanged(GameState state)
-    {
-        switch (state)
+        private void Awake()
         {
-            case GameState.Paused:
-                Time.timeScale = 0f;
-                break;
-            case GameState.Playing:
-            case GameState.Menu:
-            case GameState.Loading:
-                Time.timeScale = 1f;
-                break;
+            if (s_instance == null)
+            {
+                s_instance = this;
+            }
+            else if (s_instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            SetState(GameState.Menu);
         }
 
-        Debug.Log($"[GameManager] State changed to: {state}");
-    }
+        public void SetState(GameState newState)
+        {
+            if (m_state == newState) return;
 
-    public void Pause()
-    {
-        SetState(GameState.Paused);
-    }
+            m_state = newState;
+            OnStateChanged(newState);
+        }
 
-    public void Resume()
-    {
-        SetState(GameState.Playing);
-    }
+        private void OnStateChanged(GameState state)
+        {
+            switch (state)
+            {
+                case GameState.Paused:
+                    m_timeScale = GameConstants.PAUSED_TIME_SCALE;
+                    break;
+                default:
+                    m_timeScale = GameConstants.DEFAULT_TIME_SCALE;
+                    break;
+            }
 
-    public void TogglePause()
-    {
-        if (IsPaused)
-            Resume();
-        else
-            Pause();
-    }
+            Time.timeScale = m_timeScale;
+            Debug.Log($"[GameManager] State changed to: {state}");
+        }
 
-    public void StartGame()
-    {
-        SetState(GameState.Playing);
-    }
+        public void Pause()
+        {
+            SetState(GameState.Paused);
+        }
 
-    public void ReturnToMenu()
-    {
-        SetState(GameState.Menu);
+        public void Resume()
+        {
+            SetState(GameState.Playing);
+        }
+
+        public void TogglePause()
+        {
+            if (IsPaused) Resume();
+            else Pause();
+        }
+
+        public void StartGame()
+        {
+            SetState(GameState.Playing);
+        }
+
+        public void ReturnToMenu()
+        {
+            SetState(GameState.Menu);
+        }
     }
 }
