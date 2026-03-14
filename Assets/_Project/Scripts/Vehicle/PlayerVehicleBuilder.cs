@@ -232,6 +232,11 @@ namespace CarSimulator.Vehicle
             AddNitrousOxide(parent.gameObject, physics);
             AddVehicleDamage(parent.gameObject);
             AddVehicleLights(parent.gameObject);
+            AddNeonUnderglow(parent.gameObject);
+            AddCarHorn(parent.gameObject);
+            AddWindshieldEffects(parent.gameObject);
+            AddCrashSounds(parent.gameObject);
+            AddMirrors(parent.gameObject);
         }
 
         private GearSystem AddGearSystem(GameObject vehicle, VehiclePhysics physics)
@@ -351,6 +356,38 @@ namespace CarSimulator.Vehicle
             windshield.m_enableRain = true;
             windshield.m_enableDirt = true;
             windshield.m_enableFog = true;
+        }
+
+        private void AddCrashSounds(GameObject vehicle)
+        {
+            CrashSounds crash = vehicle.AddComponent<CrashSounds>();
+            crash.m_enableCrashSounds = true;
+        }
+
+        private void AddMirrors(GameObject vehicle)
+        {
+            GameObject leftMirror = CreateMirror(vehicle, new Vector3(-1.1f, 1f, -0.5f), VehicleMirror.MirrorType.Side);
+            GameObject rightMirror = CreateMirror(vehicle, new Vector3(1.1f, 1f, -0.5f), VehicleMirror.MirrorType.Side);
+            GameObject rearMirror = CreateMirror(vehicle, new Vector3(0, 1.2f, -1.8f), VehicleMirror.MirrorType.Rear);
+        }
+
+        private GameObject CreateMirror(GameObject vehicle, Vector3 localPos, VehicleMirror.MirrorType type)
+        {
+            GameObject mirrorObj = new GameObject($"Mirror_{type}");
+            mirrorObj.transform.SetParent(vehicle.transform);
+            mirrorObj.transform.localPosition = localPos;
+
+            GameObject mirrorSurface = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            mirrorSurface.transform.SetParent(mirrorObj.transform);
+            mirrorSurface.transform.localPosition = Vector3.zero;
+            mirrorSurface.transform.localRotation = type == VehicleMirror.MirrorType.Side ? 
+                Quaternion.Euler(0, 90, 0) : Quaternion.identity;
+            mirrorSurface.transform.localScale = new Vector3(0.3f, 0.2f, 1f);
+
+            VehicleMirror mirror = mirrorObj.AddComponent<VehicleMirror>();
+            mirror.m_mirrorType = type;
+
+            return mirrorObj;
         }
 
         public void SetBodyColor(Color color)
