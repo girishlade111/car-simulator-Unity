@@ -1,4 +1,5 @@
 using UnityEngine;
+using CarSimulator.Vehicle;
 
 namespace CarSimulator.Vehicle
 {
@@ -8,7 +9,10 @@ namespace CarSimulator.Vehicle
 
         [Header("Vehicle Prefab")]
         [SerializeField] private GameObject m_vehiclePrefab;
-        [SerializeField] private VehicleTuning m_defaultTuning;
+
+        [Header("Vehicle Settings")]
+        [SerializeField] private VehicleTuningPresets.TuningType m_tuningType = VehicleTuningPresets.TuningType.Default;
+        [SerializeField] private Color m_vehicleColor = Color.red;
 
         [Header("Spawn Settings")]
         [SerializeField] private bool m_spawnOnStart = true;
@@ -31,18 +35,6 @@ namespace CarSimulator.Vehicle
             }
 
             Instance = this;
-
-            if (m_defaultTuning == null)
-            {
-                m_defaultTuning = CreateDefaultTuning();
-            }
-        }
-
-        private VehicleTuning CreateDefaultTuning()
-        {
-            VehicleTuning tuning = ScriptableObject.CreateInstance<VehicleTuning>();
-            tuning.name = "DefaultTuning";
-            return tuning;
         }
 
         private void Start()
@@ -69,7 +61,7 @@ namespace CarSimulator.Vehicle
             }
             else if (m_buildIfNoPrefab)
             {
-                m_currentVehicle = BuildDefaultVehicle(spawnPos, spawnRot);
+                m_currentVehicle = BuildVehicle(spawnPos, spawnRot);
             }
             else
             {
@@ -84,11 +76,14 @@ namespace CarSimulator.Vehicle
             RegisterWithSpawnManager();
         }
 
-        private GameObject BuildDefaultVehicle(Vector3 position, Quaternion rotation)
+        private GameObject BuildVehicle(Vector3 position, Quaternion rotation)
         {
             GameObject builderObj = new GameObject("TempBuilder");
             PlayerVehicleBuilder builder = builderObj.AddComponent<PlayerVehicleBuilder>();
-            builder.SetTuning(m_defaultTuning);
+            
+            VehicleTuning tuning = GetTuning();
+            builder.SetTuning(tuning);
+            builder.SetBodyColor(m_vehicleColor);
             
             GameObject vehicle = builder.BuildVehicle();
             vehicle.transform.position = position;
@@ -98,6 +93,19 @@ namespace CarSimulator.Vehicle
             return vehicle;
         }
 
+        private VehicleTuning GetTuning()
+        {
+            var presets = FindObjectOfType<VehicleTuningPresets>();
+            if (presets != null)
+            {
+                return presets.GetTuningByType(m_tuningType);
+            }
+
+            VehicleTuning tuning = ScriptableObject.CreateInstance<VehicleTuning>();
+            tuning.name = "RuntimeTuning";
+            return tuning;
+        }
+
         private Vector3 GetSpawnPosition()
         {
             if (m_spawnPoint != null)
@@ -105,7 +113,7 @@ namespace CarSimulator.Vehicle
                 return m_spawnPoint.position;
             }
 
-            var spawnPoint = FindObjectOfType<SpawnPoint>();
+            var spawnPoint = FindObjectOfType<World.SpawnPoint>();
             if (spawnPoint != null)
             {
                 return spawnPoint.Position + Vector3.up * 2f;
@@ -121,7 +129,7 @@ namespace CarSimulator.Vehicle
                 return m_spawnPoint.rotation;
             }
 
-            var spawnPoint = FindObjectOfType<SpawnPoint>();
+            var spawnPoint = FindObjectOfType<World.SpawnPoint>();
             if (spawnPoint != null)
             {
                 return spawnPoint.Rotation;
@@ -142,6 +150,16 @@ namespace CarSimulator.Vehicle
         public void SetSpawnPoint(Transform spawnPoint)
         {
             m_spawnPoint = spawnPoint;
+        }
+
+        public void SetTuningType(VehicleTuningPresets.TuningType type)
+        {
+            m_tuningType = type;
+        }
+
+        public void SetVehicleColor(Color color)
+        {
+            m_vehicleColor = color;
         }
 
         public void RespawnVehicle()

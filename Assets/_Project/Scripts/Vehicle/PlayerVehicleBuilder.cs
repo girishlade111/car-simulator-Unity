@@ -8,6 +8,8 @@ namespace CarSimulator.Vehicle
         [SerializeField] private string m_vehicleName = "PlayerCar";
         [SerializeField] private Vector3 m_bodySize = new Vector3(2f, 0.8f, 4f);
         [SerializeField] private Vector3 m_cabinSize = new Vector3(1.8f, 0.7f, 2f);
+        [SerializeField] private Color m_bodyColor = Color.red;
+        [SerializeField] private Color m_cabinColor = Color.gray;
 
         [Header("Wheel Settings")]
         [SerializeField] private float m_wheelRadius = 0.35f;
@@ -15,6 +17,9 @@ namespace CarSimulator.Vehicle
         [SerializeField] private float m_frontWheelPositionZ = 1.2f;
         [SerializeField] private float m_rearWheelPositionZ = -1.2f;
         [SerializeField] private float m_wheelPositionX = 1f;
+
+        [Header("Effects")]
+        [SerializeField] private bool m_addWheelParticles = true;
 
         [Header("Components")]
         [SerializeField] private VehicleTuning m_tuning;
@@ -30,10 +35,16 @@ namespace CarSimulator.Vehicle
 
             GameObject body = CreateBody(vehicle.transform);
             GameObject cabin = CreateCabin(vehicle.transform);
+            GameObject hood = CreateHood(vehicle.transform);
             Transform[] wheels = CreateWheels(vehicle.transform);
             
-            CreateWheelColliders(vehicle.transform, wheels);
-            AddVehicleComponents(vehicle.transform);
+            WheelCollider[] colliders = CreateWheelColliders(vehicle.transform, wheels);
+            AddVehicleComponents(vehicle.transform, colliders);
+
+            if (m_addWheelParticles)
+            {
+                AddWheelParticles(vehicle.transform, colliders);
+            }
 
             return vehicle;
         }
@@ -46,6 +57,8 @@ namespace CarSimulator.Vehicle
             body.transform.localPosition = new Vector3(0, 0.5f, 0);
             body.transform.localScale = m_bodySize;
             body.layer = parent.gameObject.layer;
+
+            ApplyColor(body, m_bodyColor);
             return body;
         }
 
@@ -57,7 +70,32 @@ namespace CarSimulator.Vehicle
             cabin.transform.localPosition = new Vector3(0, 1.2f, -0.3f);
             cabin.transform.localScale = m_cabinSize;
             cabin.layer = parent.gameObject.layer;
+
+            ApplyColor(cabin, m_cabinColor);
             return cabin;
+        }
+
+        private GameObject CreateHood(Transform parent)
+        {
+            GameObject hood = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            hood.name = "Hood";
+            hood.transform.SetParent(parent);
+            hood.transform.localPosition = new Vector3(0, 0.9f, 1.3f);
+            hood.transform.localScale = new Vector3(1.6f, 0.2f, 1.2f);
+            hood.layer = parent.gameObject.layer;
+
+            ApplyColor(hood, m_bodyColor * 0.8f);
+            return hood;
+        }
+
+        private void ApplyColor(GameObject obj, Color color)
+        {
+            var renderer = obj.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.material = new Material(Shader.Find("Standard"));
+                renderer.material.color = color;
+            }
         }
 
         private Transform[] CreateWheels(Transform parent)
@@ -80,6 +118,8 @@ namespace CarSimulator.Vehicle
                 wheel.transform.localScale = new Vector3(m_wheelRadius * 2f, m_wheelRadius, m_wheelRadius);
                 wheel.transform.rotation = Quaternion.Euler(0, 0, 90);
                 wheel.layer = parent.gameObject.layer;
+
+                ApplyColor(wheel, Color.black);
                 
                 wheels[i] = wheel.transform;
             }
@@ -87,10 +127,9 @@ namespace CarSimulator.Vehicle
             return wheels;
         }
 
-        private void CreateWheelColliders(Transform parent, Transform[] wheelMeshes)
+        private WheelCollider[] CreateWheelColliders(Transform parent, Transform[] wheelMeshes)
         {
-            WheelCollider[] frontWheels = new WheelCollider[2];
-            WheelCollider[] rearWheels = new WheelCollider[2];
+            WheelCollider[] allColliders = new WheelCollider[4];
 
             for (int i = 0; i < 2; i++)
             {
@@ -103,7 +142,7 @@ namespace CarSimulator.Vehicle
                 frontCollider.radius = m_wheelRadius;
                 frontCollider.width = m_wheelWidth;
                 ConfigureWheelCollider(frontCollider);
-                frontWheels[i] = frontCollider;
+                allColliders[i] = frontCollider;
             }
 
             for (int i = 0; i < 2; i++)
@@ -117,7 +156,7 @@ namespace CarSimulator.Vehicle
                 rearCollider.radius = m_wheelRadius;
                 rearCollider.width = m_wheelWidth;
                 ConfigureWheelCollider(rearCollider);
-                rearWheels[i] = rearCollider;
+                allColliders[i + 2] = rearCollider;
             }
 
             WheelVisuals[] visuals = parent.GetComponentsInChildren<WheelVisuals>();
@@ -125,6 +164,8 @@ namespace CarSimulator.Vehicle
             {
                 visuals[i].m_wheelMesh = wheelMeshes[i];
             }
+
+            return allColliders;
         }
 
         private void ConfigureWheelCollider(WheelCollider collider)
@@ -148,7 +189,7 @@ namespace CarSimulator.Vehicle
             collider.alignedFriction = 0.1f;
         }
 
-        private void AddVehicleComponents(Transform parent)
+        private void AddVehicleComponents(Transform parent, WheelCollider[] colliders)
         {
             GameObject centerOfMass = new GameObject("CenterOfMass");
             centerOfMass.transform.SetParent(parent);
@@ -161,7 +202,6 @@ namespace CarSimulator.Vehicle
             physics.m_tuning = m_tuning;
             physics.m_centerOfMass = centerOfMass.transform;
 
-            var colliders = parent.GetComponentsInChildren<WheelCollider>();
             WheelCollider[] front = new WheelCollider[2];
             WheelCollider[] rear = new WheelCollider[2];
 
@@ -184,9 +224,27 @@ namespace CarSimulator.Vehicle
             parent.gameObject.AddComponent<VehicleController>();
         }
 
+        private void AddWheelParticles(Transform parent, WheelCollider[] colliders)
+        {
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                GameObject particleObj = new GameObject($"WheelParticles_{i}");
+                particleObj.transform.SetParent(parent);
+                particleObj.transform.localPosition = colliders[i].transform.localPosition;
+
+                WheelParticles particles = particleObj.AddComponent<WheelParticles>();
+                particles.m_wheelCollider = colliders[i];
+            }
+        }
+
         public void SetTuning(VehicleTuning tuning)
         {
             m_tuning = tuning;
+        }
+
+        public void SetBodyColor(Color color)
+        {
+            m_bodyColor = color;
         }
     }
 }
