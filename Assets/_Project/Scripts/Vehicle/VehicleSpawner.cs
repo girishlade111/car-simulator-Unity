@@ -22,9 +22,11 @@ namespace CarSimulator.Vehicle
         [SerializeField] private Transform m_spawnPoint;
 
         private GameObject m_currentVehicle;
+        private VehicleTuningPresets.TuningType m_currentTuningType;
 
         public GameObject CurrentVehicle => m_currentVehicle;
         public Transform VehicleTransform => m_currentVehicle != null ? m_currentVehicle.transform : null;
+        public VehicleTuningPresets.TuningType CurrentTuningType => m_currentTuningType;
 
         private void Awake()
         {
@@ -155,6 +157,30 @@ namespace CarSimulator.Vehicle
         public void SetTuningType(VehicleTuningPresets.TuningType type)
         {
             m_tuningType = type;
+            m_currentTuningType = type;
+            ApplyTuningToVehicle();
+        }
+
+        private void ApplyTuningToVehicle()
+        {
+            if (m_currentVehicle == null) return;
+
+            var physics = m_currentVehicle.GetComponent<VehiclePhysics>();
+            if (physics != null)
+            {
+                var presets = FindObjectOfType<VehicleTuningPresets>();
+                if (presets != null)
+                {
+                    VehicleTuning tuning = presets.GetTuningByType(m_currentTuningType);
+                    physics.m_tuning = tuning;
+
+                    var rb = m_currentVehicle.GetComponent<Rigidbody>();
+                    if (rb != null)
+                    {
+                        rb.mass = tuning.mass;
+                    }
+                }
+            }
         }
 
         public void SetVehicleColor(Color color)

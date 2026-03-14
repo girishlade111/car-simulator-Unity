@@ -222,6 +222,17 @@ namespace CarSimulator.Vehicle
             physics.m_rearWheels = rear;
 
             parent.gameObject.AddComponent<VehicleController>();
+
+            AddEngineAudio(parent.gameObject, physics);
+        }
+
+        private void AddEngineAudio(GameObject vehicle, VehiclePhysics physics)
+        {
+            AudioSource audioSource = vehicle.AddComponent<AudioSource>();
+            
+            EngineAudio engineAudio = vehicle.AddComponent<EngineAudio>();
+            engineAudio.m_vehiclePhysics = physics;
+            engineAudio.m_enableEngineSound = true;
         }
 
         private void AddWheelParticles(Transform parent, WheelCollider[] colliders)
