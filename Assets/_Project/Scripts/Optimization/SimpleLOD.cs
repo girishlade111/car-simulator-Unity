@@ -1,84 +1,79 @@
 using UnityEngine;
 
-public class SimpleLOD : MonoBehaviour
+namespace CarSimulator.Optimization
 {
-    [Header("LOD Settings")]
-    [SerializeField] private LODLevel[] m_lodLevels;
-    [SerializeField] private float[] m_lodDistances = new float[] { 50f, 100f, 200f };
-
-    [System.Serializable]
-    public class LODLevel
+    public class SimpleLOD : MonoBehaviour
     {
-        public GameObject highDetail;
-        public GameObject mediumDetail;
-        public GameObject lowDetail;
-    }
+        [Header("LOD Levels")]
+        [SerializeField] private LODLevel[] m_levels;
 
-    private Camera m_mainCamera;
-    private int m_currentLOD;
+        [Header("Distances")]
+        [SerializeField] private float[] m_distances = new float[] { 50f, 100f, 200f };
 
-    private void Start()
-    {
-        m_mainCamera = Camera.main;
-        UpdateLOD();
-    }
+        private Camera m_mainCamera;
+        private int m_currentLOD;
 
-    private void Update()
-    {
-        UpdateLOD();
-    }
-
-    private void UpdateLOD()
-    {
-        if (m_mainCamera == null || m_lodLevels == null || m_lodLevels.Length == 0) return;
-
-        float distance = Vector3.Distance(transform.position, m_mainCamera.transform.position);
-        int newLOD = GetLODLevel(distance);
-
-        if (newLOD != m_currentLOD)
+        [System.Serializable]
+        public class LODLevel
         {
-            SetLOD(newLOD);
+            public GameObject highDetail;
+            public GameObject mediumDetail;
+            public GameObject lowDetail;
         }
-    }
 
-    private int GetLODLevel(float distance)
-    {
-        for (int i = 0; i < m_lodDistances.Length; i++)
+        private void Start()
         {
-            if (distance < m_lodDistances[i])
+            m_mainCamera = Camera.main;
+            UpdateLOD();
+        }
+
+        private void Update()
+        {
+            UpdateLOD();
+        }
+
+        private void UpdateLOD()
+        {
+            if (m_mainCamera == null || m_levels == null || m_levels.Length == 0) return;
+
+            float distance = Vector3.Distance(transform.position, m_mainCamera.transform.position);
+            int newLOD = GetLODLevel(distance);
+
+            if (newLOD != m_currentLOD)
             {
-                return i;
+                SetLOD(newLOD);
             }
         }
-        return m_lodDistances.Length;
-    }
 
-    private void SetLOD(int lod)
-    {
-        m_currentLOD = lod;
-
-        for (int i = 0; i < m_lodLevels.Length; i++)
+        private int GetLODLevel(float distance)
         {
-            var level = m_lodLevels[i];
-            if (level.highDetail != null) level.highDetail.SetActive(i == 0 && lod == 0);
-            if (level.mediumDetail != null) level.mediumDetail.SetActive(i == 0 && lod == 1);
-            if (level.lowDetail != null) level.lowDetail.SetActive(i == 0 && lod >= 2);
+            for (int i = 0; i < m_distances.Length; i++)
+            {
+                if (distance < m_distances[i])
+                    return i;
+            }
+            return m_distances.Length;
         }
-    }
 
-    private void OnEnable()
-    {
-        UpdateLOD();
-    }
-
-    private void OnDisable()
-    {
-        for (int i = 0; i < m_lodLevels.Length; i++)
+        private void SetLOD(int lod)
         {
-            var level = m_lodLevels[i];
-            if (level.highDetail != null) level.highDetail.SetActive(false);
-            if (level.mediumDetail != null) level.mediumDetail.SetActive(false);
-            if (level.lowDetail != null) level.lowDetail.SetActive(false);
+            m_currentLOD = lod;
+
+            for (int i = 0; i < m_levels.Length; i++)
+            {
+                var level = m_levels[i];
+                if (level.highDetail) level.highDetail.SetActive(false);
+                if (level.mediumDetail) level.mediumDetail.SetActive(false);
+                if (level.lowDetail) level.lowDetail.SetActive(false);
+            }
+
+            if (m_currentLOD < m_levels.Length)
+            {
+                var activeLevel = m_levels[m_currentLOD];
+                if (activeLevel.highDetail) activeLevel.highDetail.SetActive(true);
+                if (activeLevel.mediumDetail) activeLevel.mediumDetail.SetActive(true);
+                if (activeLevel.lowDetail) activeLevel.lowDetail.SetActive(true);
+            }
         }
     }
 }

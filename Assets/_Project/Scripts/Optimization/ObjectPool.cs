@@ -1,222 +1,137 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ObjectPool : MonoBehaviour
+namespace CarSimulator.Optimization
 {
-    public static ObjectPool Instance { get; private set; }
-
-    [Header("Pool Settings")]
-    [SerializeField] private GameObject m_prefab;
-    [SerializeField] private int m_initialSize = 10;
-    [SerializeField] private int m_maxSize = 50;
-    [SerializeField] private bool m_autoExpand = true;
-
-    private Queue<GameObject> m_availableObjects;
-    private List<GameObject> m_activeObjects;
-
-    public int ActiveCount => m_activeObjects.Count;
-    public int AvailableCount => m_availableObjects.Count;
-
-    private void Awake()
+    public class ObjectPool : MonoBehaviour
     {
-        if (Instance != null)
+        [Header("Settings")]
+        [SerializeField] private GameObject m_prefab;
+        [SerializeField] private int m_initialSize = 10;
+        [SerializeField] private int m_maxSize = 50;
+        [SerializeField] private bool m_autoExpand = true;
+
+        private Queue<GameObject> m_available = new Queue<GameObject>();
+        private List<GameObject> m_active = new List<GameObject>();
+
+        public int ActiveCount => m_active.Count;
+        public int AvailableCount => m_available.Count;
+
+        private void Awake()
         {
-            Destroy(gameObject);
-            return;
+            Initialize();
         }
 
-        Instance = this;
-
-        m_availableObjects = new Queue<GameObject>();
-        m_activeObjects = new List<GameObject>();
-
-        InitializePool();
-    }
-
-    private void InitializePool()
-    {
-        if (m_prefab == null)
+        private void Initialize()
         {
-            Debug.LogWarning("[ObjectPool] No prefab assigned!");
-            return;
+            if (m_prefab == null) return;
+
+            for (int i = 0; i < m_initialSize; i++)
+            {
+                CreateObject();
+            }
         }
 
-        for (int i = 0; i < m_initialSize; i++)
+        private GameObject CreateObject()
         {
-            CreateNewObject();
-        }
-    }
-
-    private GameObject CreateNewObject()
-    {
-        if (m_availableObjects.Count + m_activeObjects.Count >= m_maxSize)
-        {
-            return null;
+            GameObject obj = Instantiate(m_prefab, transform);
+            obj.SetActive(false);
+            m_available.Enqueue(obj);
+            return obj;
         }
 
-        GameObject obj = Instantiate(m_prefab, transform);
-        obj.SetActive(false);
-        m_availableObjects.Enqueue(obj);
-        return obj;
-    }
-
-    public GameObject Get()
-    {
-        return Get(Vector3.zero, Quaternion.identity);
-    }
-
-    public GameObject Get(Vector3 position)
-    {
-        return Get(position, Quaternion.identity);
-    }
-
-    public GameObject Get(Vector3 position, Quaternion rotation)
-    {
-        GameObject obj = null;
-
-        if (m_availableObjects.Count > 0)
+        public GameObject Get()
         {
-            obj = m_availableObjects.Dequeue();
-        }
-        else if (m_autoExpand)
-        {
-            obj = CreateNewObject();
+            return Get(Vector3.zero, Quaternion.identity);
         }
 
-        if (obj != null)
+        public GameObject Get(Vector3 position)
         {
-            obj.transform.position = position;
-            obj.transform.rotation = rotation;
-            obj.SetActive(true);
-            m_activeObjects.Add(obj);
+            return Get(position, Quaternion.identity);
         }
 
-        return obj;
-    }
-
-    public void Return(GameObject obj)
-    {
-        if (obj == null) return;
-
-        obj.SetActive(false);
-        m_activeObjects.Remove(obj);
-        m_availableObjects.Enqueue(obj);
-    }
-
-    public void ReturnAll()
-    {
-        for (int i = m_activeObjects.Count - 1; i >= 0; i--)
+        public GameObject Get(Vector3 position, Quaternion rotation)
         {
-            Return(m_activeObjects[i]);
-        }
-    }
+            GameObject obj = null;
 
-    public void Clear()
-    {
-        ReturnAll();
+            if (m_available.Count > 0)
+            {
+                obj = m_available.Dequeue();
+            }
+            else if (m_autoExpand && m_active.Count + m_available.Count < m_maxSize)
+            {
+                obj = CreateObject();
+            }
 
-        while (m_availableObjects.Count > 0)
-        {
-            GameObject obj = m_availableObjects.Dequeue();
             if (obj != null)
             {
-                Destroy(obj);
+                obj.transform.position = position;
+                obj.transform.rotation = rotation;
+                obj.SetActive(true);
+                m_active.Add(obj);
+            }
+
+            return obj;
+        }
+
+        public void Return(GameObject obj)
+        {
+            if (obj == null) return;
+
+            obj.SetActive(false);
+            m_active.Remove(obj);
+            m_available.Enqueue(obj);
+        }
+
+        public void ReturnAll()
+        {
+            for (int i = m_active.Count - 1; i >= 0; i--)
+            {
+                Return(m_active[i]);
             }
         }
     }
 
-    private void OnDestroy()
+    public class PoolManager : MonoBehaviour
     {
-        if (Instance == this)
+        private static PoolManager s_instance;
+        public static PoolManager Instance => s_instance;
+
+        private Dictionary<string, ObjectPool> m_pools = new Dictionary<string, ObjectPool>();
+
+        private void Awake()
         {
-            Instance = null;
-        }
-    }
-}
-
-public class ObjectPoolManager : MonoBehaviour
-{
-    public static ObjectPoolManager Instance { get; private set; }
-
-    [Header("Pools")]
-    [SerializeField] private PoolData[] m_pools;
-
-    private Dictionary<string, ObjectPool> m_poolDict;
-
-    [System.Serializable]
-    public class PoolData
-    {
-        public string poolName;
-        public GameObject prefab;
-        public int initialSize = 10;
-        public int maxSize = 50;
-        public bool autoExpand = true;
-    }
-
-    private void Awake()
-    {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
+            if (s_instance == null)
+            {
+                s_instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
         }
 
-        Instance = this;
-        InitializePools();
-    }
-
-    private void InitializePools()
-    {
-        m_poolDict = new Dictionary<string, ObjectPool>();
-
-        for (int i = 0; i < m_pools.Length; i++)
+        public void RegisterPool(string name, ObjectPool pool)
         {
-            var poolData = m_pools[i];
-            if (poolData.prefab == null) continue;
-
-            GameObject poolObj = new GameObject($"Pool_{poolData.poolName}");
-            poolObj.transform.SetParent(transform);
-
-            ObjectPool pool = poolObj.AddComponent<ObjectPool>();
-            var field = typeof(ObjectPool).GetField("m_prefab", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            field?.SetValue(pool, poolData.prefab);
-
-            m_poolDict[poolData.poolName] = pool;
-        }
-    }
-
-    public GameObject Spawn(string poolName, Vector3 position, Quaternion rotation)
-    {
-        if (m_poolDict.ContainsKey(poolName))
-        {
-            return m_poolDict[poolName].Get(position, rotation);
+            m_pools[name] = pool;
         }
 
-        Debug.LogWarning($"[ObjectPoolManager] Pool not found: {poolName}");
-        return null;
-    }
-
-    public void Despawn(string poolName, GameObject obj)
-    {
-        if (m_poolDict.ContainsKey(poolName))
+        public GameObject Spawn(string poolName, Vector3 position, Quaternion rotation)
         {
-            m_poolDict[poolName].Return(obj);
+            if (m_pools.TryGetValue(poolName, out ObjectPool pool))
+            {
+                return pool.Get(position, rotation);
+            }
+            Debug.LogWarning($"[PoolManager] Pool not found: {poolName}");
+            return null;
         }
-    }
 
-    public void DespawnAll(string poolName)
-    {
-        if (m_poolDict.ContainsKey(poolName))
+        public void Despawn(string poolName, GameObject obj)
         {
-            m_poolDict[poolName].ReturnAll();
-        }
-    }
-
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
+            if (m_pools.TryGetValue(poolName, out ObjectPool pool))
+            {
+                pool.Return(obj);
+            }
         }
     }
 }
