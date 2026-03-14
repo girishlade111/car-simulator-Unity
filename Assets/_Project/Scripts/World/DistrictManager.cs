@@ -2,10 +2,11 @@ using UnityEngine;
 
 namespace CarSimulator.World
 {
-{
-    public static DistrictManager Instance { get; private set; }
+    public class DistrictManager : MonoBehaviour
+    {
+        public static DistrictManager Instance { get; private set; }
 
-    [Header("District Settings")]
+        [Header("District Settings")]
     [SerializeField] private Vector2 m_districtSize = new Vector2(500f, 500f);
     [SerializeField] private int m_chunkGridSize = 100;
 
