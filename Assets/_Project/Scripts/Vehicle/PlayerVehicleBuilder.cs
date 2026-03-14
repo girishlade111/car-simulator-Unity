@@ -241,6 +241,22 @@ namespace CarSimulator.Vehicle
             AddVehicleWrap(parent.gameObject);
             AddWindowTint(parent.gameObject);
             AddBodyKit(parent.gameObject);
+            AddSpoilerCustomizer(parent.gameObject);
+            AddExhaustMod(parent.gameObject);
+        }
+
+        private void AddSpoilerCustomizer(GameObject vehicle)
+        {
+            SpoilerCustomizer spoiler = vehicle.AddComponent<SpoilerCustomizer>();
+            spoiler.m_spoilerEnabled = true;
+            spoiler.ApplySpoiler(SpoilerCustomizer.SpoilerType.Lip);
+        }
+
+        private void AddExhaustMod(GameObject vehicle)
+        {
+            ExhaustMod exhaust = vehicle.AddComponent<ExhaustMod>();
+            exhaust.m_enableExhaust = true;
+            exhaust.SetExhaust(ExhaustMod.ExhaustType.Stock);
         }
 
         private void AddWindowTint(GameObject vehicle)
