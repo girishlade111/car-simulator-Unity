@@ -238,6 +238,14 @@ namespace CarSimulator.Vehicle
             AddCrashSounds(parent.gameObject);
             AddMirrors(parent.gameObject);
             AddCarRadio(parent.gameObject);
+            AddVehicleWrap(parent.gameObject);
+        }
+
+        private void AddVehicleWrap(GameObject vehicle)
+        {
+            VehicleWrap wrap = vehicle.AddComponent<VehicleWrap>();
+            wrap.m_enableWraps = true;
+            wrap.m_currentWrapColor = m_bodyColor;
         }
 
         private void AddCarRadio(GameObject vehicle)
