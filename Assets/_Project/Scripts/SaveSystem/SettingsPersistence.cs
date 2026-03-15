@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using UnityEngine;
+using CarSimulator.Utils;
 
 public class SettingsPersistence : MonoBehaviour
 {
@@ -52,7 +53,7 @@ public class SettingsPersistence : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"[SettingsPersistence] Failed to load settings: {e.Message}");
+            ErrorHandler.LogError("SettingsPersistence.LoadSettings", e);
             m_settings = new GameSettings();
         }
 

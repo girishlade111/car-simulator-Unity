@@ -11,6 +11,7 @@ namespace CarSimulator.World
         [SerializeField] private float m_respawnHeight = -20f;
         [SerializeField] private float m_respawnDelay = 2f;
         [SerializeField] private float m_boundaryBuffer = 10f;
+        [SerializeField] private float m_updateInterval = 0.1f;
 
         [Header("References")]
         [SerializeField] private GameObject m_playerVehiclePrefab;
@@ -21,6 +22,7 @@ namespace CarSimulator.World
         private SpawnPoint m_defaultSpawn;
         private float m_respawnTimer;
         private bool m_isRespawning;
+        private float m_lastUpdateTime;
 
         public GameObject CurrentPlayer => m_currentPlayer;
         public Transform PlayerTransform => m_currentPlayer != null ? m_currentPlayer.transform : null;
@@ -44,6 +46,8 @@ namespace CarSimulator.World
         private void Update()
         {
             if (m_currentPlayer == null || m_isRespawning) return;
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
 
             CheckForRespawn();
             CheckBoundary();

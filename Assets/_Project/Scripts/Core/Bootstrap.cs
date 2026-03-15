@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CarSimulator.Utils;
 
 public class Bootstrap : MonoBehaviour
 {

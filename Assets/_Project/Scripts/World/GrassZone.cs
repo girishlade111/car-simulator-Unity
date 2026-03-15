@@ -30,6 +30,7 @@ namespace CarSimulator.World
         [SerializeField] private bool m_windEffect = true;
         [SerializeField] private float m_windStrength = 0.5f;
         [SerializeField] private float m_windSpeed = 1f;
+        [SerializeField] private float m_windUpdateInterval = 0.1f;
 
         [Header("Placement")]
         [SerializeField] private bool m_autoSpawnOnStart = true;
@@ -38,6 +39,7 @@ namespace CarSimulator.World
 
         private List<GameObject> m_spawnedGrass = new List<GameObject>();
         private MaterialPropertyBlock m_propertyBlock;
+        private float m_lastWindUpdate;
 
         private void Start()
         {
@@ -217,10 +219,11 @@ namespace CarSimulator.World
 
         private void Update()
         {
-            if (m_windEffect)
-            {
-                ApplyWindEffect();
-            }
+            if (!m_windEffect) return;
+            if (Time.time - m_lastWindUpdate < m_windUpdateInterval) return;
+            m_lastWindUpdate = Time.time;
+
+            ApplyWindEffect();
         }
 
         private void ApplyWindEffect()

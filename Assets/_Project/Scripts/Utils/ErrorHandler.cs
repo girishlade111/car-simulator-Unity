@@ -23,14 +23,14 @@ namespace CarSimulator.Utils
         {
             if (go == null)
             {
-                Debug.LogWarning($"[ErrorHandler] GameObject is null when getting component {typeof(T).Name}");
+                LogWarning(nameof(SafeGetComponent), $"GameObject is null when getting component {typeof(T).Name}");
                 return null;
             }
 
             T component = go.GetComponent<T>();
             if (component == null)
             {
-                Debug.LogWarning($"[ErrorHandler] Component {typeof(T).Name} not found on {go.name}");
+                LogWarning(nameof(SafeGetComponent), $"Component {typeof(T).Name} not found on {go.name}");
             }
             return component;
         }
@@ -39,7 +39,7 @@ namespace CarSimulator.Utils
         {
             if (go == null)
             {
-                Debug.LogWarning($"[ErrorHandler] GameObject is null when getting components {typeof(T).Name}");
+                LogWarning(nameof(SafeGetComponents), $"GameObject is null when getting components {typeof(T).Name}");
                 return Array.Empty<T>();
             }
 
@@ -50,7 +50,7 @@ namespace CarSimulator.Utils
         {
             if (go == null)
             {
-                Debug.LogWarning($"[ErrorHandler] GameObject is null when getting child component {typeof(T).Name}");
+                LogWarning(nameof(SafeGetComponentInChildren), $"GameObject is null when getting child component {typeof(T).Name}");
                 return null;
             }
 
@@ -61,7 +61,7 @@ namespace CarSimulator.Utils
         {
             if (go == null)
             {
-                Debug.LogWarning("[ErrorHandler] Cannot set active on null GameObject");
+                LogWarning(nameof(SafeSetActive), "Cannot set active on null GameObject");
                 return false;
             }
 
@@ -69,7 +69,7 @@ namespace CarSimulator.Utils
             return true;
         }
 
-        public static void SafeInvoke(System.Action action, string context = "callback")
+        public static void SafeInvoke(Action action, string context = "callback")
         {
             try
             {
@@ -85,17 +85,46 @@ namespace CarSimulator.Utils
         {
             if (array == null)
             {
-                Debug.LogWarning("[ErrorHandler] Array is null");
+                LogWarning(nameof(SafeIndex), "Array is null");
                 return defaultValue;
             }
 
             if (index < 0 || index >= array.Length)
             {
-                Debug.LogWarning($"[ErrorHandler] Index {index} out of bounds for array length {array.Length}");
+                LogWarning(nameof(SafeIndex), $"Index {index} out of bounds for array length {array.Length}");
                 return defaultValue;
             }
 
             return array[index];
+        }
+
+        public static bool Try<T>(Func<T> action, out T result, T defaultValue = default, string context = "operation")
+        {
+            try
+            {
+                result = action();
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogError(context, e);
+                result = defaultValue;
+                return false;
+            }
+        }
+
+        public static bool Try(Action action, string context = "operation")
+        {
+            try
+            {
+                action();
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogError(context, e);
+                return false;
+            }
         }
     }
 
@@ -124,6 +153,9 @@ namespace CarSimulator.Utils
         protected virtual void SafeAwake() { }
         protected virtual void SafeStart() { }
         protected virtual void SafeOnDestroy() { }
+        protected virtual void SafeUpdate() { }
+        protected virtual void SafeFixedUpdate() { }
+        protected virtual void SafeLateUpdate() { }
 
         private void Awake()
         {
@@ -149,6 +181,42 @@ namespace CarSimulator.Utils
             }
         }
 
+        private void Update()
+        {
+            try
+            {
+                SafeUpdate();
+            }
+            catch (Exception e)
+            {
+                ErrorHandler.LogError($"{GetType().Name}.Update", e);
+            }
+        }
+
+        private void FixedUpdate()
+        {
+            try
+            {
+                SafeFixedUpdate();
+            }
+            catch (Exception e)
+            {
+                ErrorHandler.LogError($"{GetType().Name}.FixedUpdate", e);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            try
+            {
+                SafeLateUpdate();
+            }
+            catch (Exception e)
+            {
+                ErrorHandler.LogError($"{GetType().Name}.LateUpdate", e);
+            }
+        }
+
         private void OnDestroy()
         {
             try
@@ -160,5 +228,9 @@ namespace CarSimulator.Utils
                 ErrorHandler.LogError($"{GetType().Name}.OnDestroy", e);
             }
         }
+
+        protected void Log(string message) => Debug.Log($"[{GetType().Name}] {message}");
+        protected void LogWarning(string message) => Debug.LogWarning($"[{GetType().Name}] {message}");
+        protected void LogError(string message) => Debug.LogError($"[{GetType().Name}] {message}");
     }
 }

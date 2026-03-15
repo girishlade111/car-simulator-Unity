@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using CarSimulator.Utils;
 
 namespace CarSimulator.SaveSystem
 {
@@ -179,7 +180,7 @@ namespace CarSimulator.SaveSystem
             }
             catch (Exception e)
             {
-                Debug.LogError($"[SaveManager] Failed to load game: {e.Message}");
+                ErrorHandler.LogError("SaveManager.LoadGame", e);
                 return CreateNewSave(slotIndex);
             }
         }
@@ -218,7 +219,7 @@ namespace CarSimulator.SaveSystem
             }
             catch (Exception e)
             {
-                Debug.LogError($"[SaveManager] Quicksave failed: {e.Message}");
+                ErrorHandler.LogError("SaveManager.QuickSave", e);
                 return false;
             }
         }
@@ -244,7 +245,7 @@ namespace CarSimulator.SaveSystem
             }
             catch (Exception e)
             {
-                Debug.LogError($"[SaveManager] Failed to load quicksave: {e.Message}");
+                ErrorHandler.LogError("SaveManager.LoadQuickSave", e);
                 return null;
             }
         }
