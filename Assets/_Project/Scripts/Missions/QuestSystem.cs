@@ -335,6 +335,7 @@ namespace CarSimulator.Missions
         private void UpdateQuestMarker()
         {
             if (m_questMarker == null) return;
+            if (QuestManager.Instance == null) return;
 
             foreach (var quest in m_availableQuests)
             {
@@ -352,6 +353,8 @@ namespace CarSimulator.Missions
 
         public void Interact()
         {
+            if (QuestManager.Instance == null) return;
+
             foreach (var quest in m_availableQuests)
             {
                 if (!QuestManager.Instance.HasCompletedQuest(quest.questId) && !quest.isActive)

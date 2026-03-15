@@ -52,10 +52,15 @@ namespace CarSimulator.Missions
 
         private void TryStartMission()
         {
-            if (MissionManager.Instance != null)
+            var manager = FindObjectOfType<MissionManager>();
+            if (manager != null)
             {
-                MissionManager.Instance.StartMission(m_missionId);
+                manager.StartMission(m_missionId);
                 Debug.Log($"[MissionTrigger] Started mission: {m_missionId}");
+            }
+            else
+            {
+                Debug.LogWarning("[MissionTrigger] MissionManager not found!");
             }
         }
 

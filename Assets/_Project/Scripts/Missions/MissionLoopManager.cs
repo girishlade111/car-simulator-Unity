@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace CarSimulator.Missions
 {
+    [System.Obsolete("Use MissionManager from MissionManager.cs")]
     public class MissionManager : MonoBehaviour
     {
         public static MissionManager Instance { get; private set; }
