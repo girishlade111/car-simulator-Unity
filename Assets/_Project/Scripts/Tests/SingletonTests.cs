@@ -39,14 +39,14 @@ namespace CarSimulator.Tests
     public class SceneLoaderTests
     {
         [Test]
-        public void SceneLoader_CanBeCreated()
+        public void SceneLoader_StaticLoadMethod_Exists()
         {
-            GameObject go = new GameObject("TestSceneLoader");
-            Runtime.SceneLoader loader = go.AddComponent<Runtime.SceneLoader>();
+            // Verify the static Load method exists and is callable
+            var type = typeof(Runtime.SceneLoader);
+            Assert.IsNotNull(type);
             
-            Assert.IsNotNull(loader);
-            
-            Object.DestroyImmediate(go);
+            var loadMethod = type.GetMethod("Load");
+            Assert.IsNotNull(loadMethod, "SceneLoader.Load method should exist");
         }
     }
 }

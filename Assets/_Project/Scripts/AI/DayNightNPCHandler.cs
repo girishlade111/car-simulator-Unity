@@ -27,6 +27,9 @@ namespace CarSimulator.AI
         [SerializeField] private float m_transitionTime = 30f;
         [SerializeField] private bool m_gradualTransition = true;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.5f;
+
         [Header("NPC Templates")]
         [SerializeField] private GameObject m_dayNPCTemplate;
         [SerializeField] private GameObject m_nightNPCTemplate;
@@ -35,6 +38,8 @@ namespace CarSimulator.AI
         private bool m_isDay = true;
         private float m_transitionTimer;
         private float m_currentSpawnCount;
+        private float m_lastUpdateTime;
+        private World.EnhancedTimeOfDay m_timeOfDaySystem;
 
         public bool IsDay => m_isDay;
 
@@ -56,29 +61,34 @@ namespace CarSimulator.AI
 
         private void FindTimeOfDay()
         {
-            var timeOfDay = FindObjectOfType<World.EnhancedTimeOfDay>();
-            if (timeOfDay != null)
+            m_timeOfDaySystem = FindObjectOfType<World.EnhancedTimeOfDay>();
+            if (m_timeOfDaySystem != null)
             {
-                m_isDay = timeOfDay.IsDay;
-                timeOfDay.OnDayStart += OnDayStart;
-                timeOfDay.OnNightStart += OnNightStart;
+                m_isDay = m_timeOfDaySystem.IsDay;
+                m_timeOfDaySystem.OnDayStart += OnDayStart;
+                m_timeOfDaySystem.OnNightStart += OnNightStart;
             }
         }
 
         private void Update()
         {
             if (!m_enableDayNightBehavior) return;
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
 
             UpdateTransition();
         }
 
         private void UpdateTransition()
         {
-            var timeOfDay = FindObjectOfType<World.EnhancedTimeOfDay>();
-            if (timeOfDay == null) return;
+            if (m_timeOfDaySystem == null)
+            {
+                FindTimeOfDay();
+                if (m_timeOfDaySystem == null) return;
+            }
 
             bool wasDay = m_isDay;
-            m_isDay = timeOfDay.IsDay;
+            m_isDay = m_timeOfDaySystem.IsDay;
 
             if (wasDay != m_isDay)
             {

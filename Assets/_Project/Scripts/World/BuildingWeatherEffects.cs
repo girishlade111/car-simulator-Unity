@@ -31,10 +31,14 @@ namespace CarSimulator.World
         [SerializeField] private bool m_showFrost;
         [SerializeField] private Material m_frostMaterial;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.1f;
+
         private Renderer[] m_buildingRenderers;
         private float m_currentWetness;
         private float m_currentSnow;
         private float m_dripTimer;
+        private float m_lastUpdateTime;
         private WeatherSystem.WeatherType m_currentWeather;
 
         private void Start()
@@ -65,6 +69,9 @@ namespace CarSimulator.World
 
         private void Update()
         {
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
+
             UpdateWeatherEffects();
         }
 

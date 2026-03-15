@@ -76,9 +76,11 @@ namespace CarSimulator.Tests
         [TearDown]
         public void Cleanup()
         {
-            UnityEngine.Object.DestroyImmediate(
-                UnityEngine.Resources.FindObjectsOfTypeAll<VehicleTuning>()[0] as VehicleTuning
-            );
+            var tunings = UnityEngine.Resources.FindObjectsOfTypeAll<VehicleTuning>();
+            if (tunings != null && tunings.Length > 0)
+            {
+                UnityEngine.Object.DestroyImmediate(tunings[0] as VehicleTuning);
+            }
         }
     }
 }

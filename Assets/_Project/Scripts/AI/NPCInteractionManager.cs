@@ -23,9 +23,13 @@ namespace CarSimulator.AI
         [SerializeField] private bool m_enableQuests = true;
         [SerializeField] private bool m_enableInformation = true;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.1f;
+
         private NPCInteraction m_currentInteraction;
         private bool m_isInteracting;
         private Transform m_playerTransform;
+        private float m_lastUpdateTime;
 
         private void Awake()
         {
@@ -63,7 +67,11 @@ namespace CarSimulator.AI
                 return;
             }
 
-            CheckForNearbyNPC();
+            if (Time.time - m_lastUpdateTime > m_updateInterval)
+            {
+                CheckForNearbyNPC();
+                m_lastUpdateTime = Time.time;
+            }
         }
 
         private void CheckForNearbyNPC()
