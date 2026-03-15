@@ -1,9 +1,10 @@
 using UnityEngine;
 using CarSimulator.Vehicle;
+using CarSimulator.Utils;
 
 namespace CarSimulator.World
 {
-    public class SpawnManager : MonoBehaviour
+    public class SpawnManager : MonoBehaviourSafe
     {
         public static SpawnManager Instance { get; private set; }
 
@@ -27,7 +28,7 @@ namespace CarSimulator.World
         public GameObject CurrentPlayer => m_currentPlayer;
         public Transform PlayerTransform => m_currentPlayer != null ? m_currentPlayer.transform : null;
 
-        private void Awake()
+        protected override void SafeAwake()
         {
             if (Instance != null)
             {
@@ -38,12 +39,12 @@ namespace CarSimulator.World
             Instance = this;
         }
 
-        private void Start()
+        protected override void SafeStart()
         {
             SpawnPlayer();
         }
 
-        private void Update()
+        protected override void SafeUpdate()
         {
             if (m_currentPlayer == null || m_isRespawning) return;
             if (Time.time - m_lastUpdateTime < m_updateInterval) return;
@@ -62,7 +63,7 @@ namespace CarSimulator.World
         {
             if (m_playerVehiclePrefab == null)
             {
-                Debug.LogError("[SpawnManager] No player vehicle prefab assigned!");
+                LogError("No player vehicle prefab assigned!");
                 return;
             }
 

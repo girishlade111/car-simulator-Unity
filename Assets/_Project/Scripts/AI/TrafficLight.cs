@@ -36,8 +36,12 @@ namespace CarSimulator.AI
         [SerializeField] private TrafficLight m_linkedLight;
         [SerializeField] private bool m_isPartOfIntersection;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.5f;
+
         private float m_stateTimer;
         private bool m_isGreenForPrimary;
+        private float m_lastUpdateTime;
 
         public LightState CurrentState => m_currentState;
         public bool IsGreen => m_currentState == LightState.Green || m_currentState == LightState.RedYellow;
@@ -50,6 +54,9 @@ namespace CarSimulator.AI
 
         private void Update()
         {
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
+
             m_stateTimer += Time.deltaTime;
             UpdateLightState();
         }

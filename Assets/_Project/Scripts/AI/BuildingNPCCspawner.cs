@@ -24,8 +24,12 @@ namespace CarSimulator.AI
         [Header("References")]
         [SerializeField] private Transform m_buildingTransform;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.5f;
+
         private List<GameObject> m_spawnedNPCs = new List<GameObject>();
         private float m_spawnTimer;
+        private float m_lastUpdateTime;
         private bool m_isBuildingActive = true;
 
         public enum NPCBehavior
@@ -70,8 +74,10 @@ namespace CarSimulator.AI
         private void Update()
         {
             if (!m_autoSpawn || !m_isBuildingActive) return;
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
 
-            m_spawnTimer += Time.deltaTime;
+            m_spawnTimer += m_updateInterval;
 
             if (m_spawnTimer >= m_spawnInterval)
             {
