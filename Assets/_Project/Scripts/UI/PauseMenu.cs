@@ -28,6 +28,8 @@ public class PauseMenu : MonoBehaviour
 
     private void Update()
     {
+        if (GameManager.Instance == null) return;
+
         if (GameManager.Instance.IsPaused != m_isPaused)
         {
             m_isPaused = GameManager.Instance.IsPaused;
@@ -38,12 +40,14 @@ public class PauseMenu : MonoBehaviour
 
     private void OnResume()
     {
-        GameManager.Instance.Resume();
+        if (GameManager.Instance != null)
+            GameManager.Instance.Resume();
     }
 
     private void OnMainMenu()
     {
-        GameManager.Instance.ReturnToMenu();
+        if (GameManager.Instance != null)
+            GameManager.Instance.ReturnToMenu();
         SceneNavigator.GoToMainMenu();
     }
 

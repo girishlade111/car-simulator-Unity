@@ -84,7 +84,10 @@ namespace CarSimulator.UI
 
         public void DeleteSlot(int slotIndex)
         {
-            SaveManager.Instance?.DeleteSave(slotIndex);
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.DeleteSave(slotIndex);
+            }
             RefreshSlots();
         }
 

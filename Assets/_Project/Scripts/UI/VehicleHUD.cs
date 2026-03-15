@@ -35,7 +35,11 @@ namespace CarSimulator.UI
         [SerializeField] private GearSystem m_gearSystem;
         [SerializeField] private VehicleSpawner m_vehicleSpawner;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.033f;
+
         private bool m_isDrifting;
+        private float m_lastUpdateTime;
 
         private void Start()
         {
@@ -45,6 +49,9 @@ namespace CarSimulator.UI
 
         private void Update()
         {
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
+
             if (m_vehiclePhysics == null)
             {
                 FindVehicleComponents();

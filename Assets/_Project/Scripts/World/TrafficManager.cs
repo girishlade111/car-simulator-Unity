@@ -17,11 +17,15 @@ namespace CarSimulator.World
         [SerializeField] private GameObject[] m_trafficCarPrefabs;
         [SerializeField] private Transform[] m_spawnPoints;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.1f;
+
         [Header("References")]
         [SerializeField] private Transform m_playerTransform;
 
         private List<TrafficCar> m_activeCars = new List<TrafficCar>();
         private List<Transform> m_waypoints = new List<Transform>();
+        private float m_lastUpdateTime;
 
         private void Awake()
         {
@@ -43,7 +47,11 @@ namespace CarSimulator.World
 
         private void Update()
         {
-            ManageTraffic();
+            if (Time.time - m_lastUpdateTime > m_updateInterval)
+            {
+                ManageTraffic();
+                m_lastUpdateTime = Time.time;
+            }
         }
 
         private void FindPlayer()

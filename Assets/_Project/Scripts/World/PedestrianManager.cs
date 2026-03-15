@@ -16,10 +16,14 @@ namespace CarSimulator.World
         [Header("Pedestrian Prefabs")]
         [SerializeField] private GameObject[] m_pedestrianPrefabs;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.1f;
+
         [Header("References")]
         [SerializeField] private Transform m_playerTransform;
 
         private List<Pedestrian> m_activePedestrians = new List<Pedestrian>();
+        private float m_lastUpdateTime;
 
         private void Awake()
         {
@@ -39,7 +43,11 @@ namespace CarSimulator.World
 
         private void Update()
         {
-            ManagePedestrians();
+            if (Time.time - m_lastUpdateTime > m_updateInterval)
+            {
+                ManagePedestrians();
+                m_lastUpdateTime = Time.time;
+            }
         }
 
         private void FindPlayer()

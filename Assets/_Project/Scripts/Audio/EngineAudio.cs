@@ -16,12 +16,16 @@ namespace CarSimulator.Audio
         [SerializeField] private float m_idleRPM = 800f;
         [SerializeField] private float m_maxRPM = 7000f;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.05f;
+
         [Header("References")]
         [SerializeField] private Vehicle.VehiclePhysics m_vehiclePhysics;
 
         private AudioSource m_audioSource;
         private float m_currentRPM;
         private float m_targetPitch;
+        private float m_lastUpdateTime;
 
         private void Awake()
         {
@@ -55,8 +59,12 @@ namespace CarSimulator.Audio
         {
             if (m_vehiclePhysics == null || !m_enableEngineSound) return;
 
-            UpdateRPM();
-            UpdateEngineSound();
+            if (Time.time - m_lastUpdateTime > m_updateInterval)
+            {
+                UpdateRPM();
+                UpdateEngineSound();
+                m_lastUpdateTime = Time.time;
+            }
         }
 
         private void UpdateRPM()
