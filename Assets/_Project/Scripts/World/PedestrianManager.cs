@@ -1,10 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using CarSimulator.AI;
+using CarSimulator.Utils;
 
 namespace CarSimulator.World
 {
-    public class PedestrianManager : MonoBehaviour
+    public class PedestrianManager : MonoBehaviourSafe
     {
         public static PedestrianManager Instance { get; private set; }
 
@@ -25,7 +26,7 @@ namespace CarSimulator.World
         private List<Pedestrian> m_activePedestrians = new List<Pedestrian>();
         private float m_lastUpdateTime;
 
-        private void Awake()
+        protected override void SafeAwake()
         {
             if (Instance != null)
             {
@@ -35,13 +36,13 @@ namespace CarSimulator.World
             Instance = this;
         }
 
-        private void Start()
+        protected override void SafeStart()
         {
             FindPlayer();
             SpawnInitialPedestrians();
         }
 
-        private void Update()
+        protected override void SafeUpdate()
         {
             if (Time.time - m_lastUpdateTime > m_updateInterval)
             {

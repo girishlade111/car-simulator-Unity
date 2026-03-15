@@ -29,6 +29,9 @@ namespace CarSimulator.UI
         [SerializeField] private Text m_currentDriftScore;
         [SerializeField] private Text m_currentDistance;
 
+        [Header("Optimization")]
+        [SerializeField] private float m_updateInterval = 0.1f;
+
         private LeaderboardCategory m_currentCategory = LeaderboardCategory.Speed;
         private List<LeaderboardEntry> m_speedLeaderboard = new List<LeaderboardEntry>();
         private List<LeaderboardEntry> m_lapTimeLeaderboard = new List<LeaderboardEntry>();
@@ -40,6 +43,7 @@ namespace CarSimulator.UI
         private float m_currentDriftTime;
         private bool m_isDrifting;
         private bool m_isInLap;
+        private float m_lastUpdateTime;
 
         public enum LeaderboardCategory
         {
@@ -226,6 +230,9 @@ namespace CarSimulator.UI
 
         private void Update()
         {
+            if (Time.time - m_lastUpdateTime < m_updateInterval) return;
+            m_lastUpdateTime = Time.time;
+
             UpdateCurrentStats();
         }
 

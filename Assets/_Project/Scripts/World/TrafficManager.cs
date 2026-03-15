@@ -1,10 +1,11 @@
 using UnityEngine;
 using System.Collections.Generic;
 using CarSimulator.AI;
+using CarSimulator.Utils;
 
 namespace CarSimulator.World
 {
-    public class TrafficManager : MonoBehaviour
+    public class TrafficManager : MonoBehaviourSafe
     {
         public static TrafficManager Instance { get; private set; }
 
@@ -27,7 +28,7 @@ namespace CarSimulator.World
         private List<Transform> m_waypoints = new List<Transform>();
         private float m_lastUpdateTime;
 
-        private void Awake()
+        protected override void SafeAwake()
         {
             if (Instance != null)
             {
@@ -38,14 +39,14 @@ namespace CarSimulator.World
             Instance = this;
         }
 
-        private void Start()
+        protected override void SafeStart()
         {
             FindPlayer();
             FindWaypoints();
             SpawnInitialTraffic();
         }
 
-        private void Update()
+        protected override void SafeUpdate()
         {
             if (Time.time - m_lastUpdateTime > m_updateInterval)
             {
