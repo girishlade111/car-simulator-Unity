@@ -15,6 +15,7 @@ namespace CarSimulator.World
         [SerializeField] private float m_lodStartDistance = 30f;
         [SerializeField] private float m_lodEndDistance = 60f;
         [SerializeField] private bool m_initiallyEnabled = true;
+        [SerializeField] private float m_updateInterval = 0.25f;
 
         [Header("Props")]
         [SerializeField] private PropSpawnAnchor[] m_propAnchors;
@@ -41,6 +42,7 @@ namespace CarSimulator.World
 
         private bool m_isEnabled;
         private Transform m_playerTransform;
+        private float m_lastLODUpdate;
 
         private void OnEnable()
         {
@@ -78,7 +80,11 @@ namespace CarSimulator.World
         {
             if (!Application.isPlaying || !m_autoLOD) return;
 
-            UpdateLOD();
+            if (Time.time - m_lastLODUpdate > m_updateInterval)
+            {
+                UpdateLOD();
+                m_lastLODUpdate = Time.time;
+            }
         }
 
         private void FindPlayer()

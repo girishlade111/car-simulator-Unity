@@ -29,12 +29,15 @@ namespace CarSimulator.AI
         [SerializeField] private bool m_lodEnabled = true;
         [SerializeField] private float m_lodDistance = 80f;
         [SerializeField] private bool m_physicsOnDemand = true;
+        [SerializeField] private float m_waypointCacheRefreshInterval = 30f;
 
         [Header("References")]
         [SerializeField] private Transform m_playerTransform;
 
         private List<EnhancedTrafficCar> m_activeVehicles = new List<EnhancedTrafficCar>();
         private List<TrafficPath> m_availablePaths = new List<TrafficPath>();
+        private TrafficWaypoint[] m_cachedWaypoints;
+        private float m_lastWaypointCacheTime;
 
         private float m_spawnTimer;
         private float m_spawnInterval = 3f;
@@ -53,12 +56,24 @@ namespace CarSimulator.AI
         {
             FindPlayer();
             InitializePaths();
+            RefreshWaypointCache();
             SpawnInitialTraffic();
+        }
+
+        private void RefreshWaypointCache()
+        {
+            m_cachedWaypoints = FindObjectsOfType<TrafficWaypoint>();
+            m_lastWaypointCacheTime = Time.time;
         }
 
         private void Update()
         {
             if (!m_enabled) return;
+
+            if (Time.time - m_lastWaypointCacheTime > m_waypointCacheRefreshInterval)
+            {
+                RefreshWaypointCache();
+            }
 
             UpdateSpawning();
             UpdateVehicleLOD();
@@ -199,15 +214,19 @@ namespace CarSimulator.AI
 
         private Transform[] GetRandomTransformWaypoints()
         {
-            var allWaypoints = FindObjectsOfType<TrafficWaypoint>();
-            if (allWaypoints.Length == 0) return null;
+            if (m_cachedWaypoints == null || m_cachedWaypoints.Length == 0)
+            {
+                RefreshWaypointCache();
+            }
+
+            if (m_cachedWaypoints.Length == 0) return null;
 
             List<Transform> waypoints = new List<Transform>();
-            int count = Mathf.Min(5, allWaypoints.Length);
+            int count = Mathf.Min(5, m_cachedWaypoints.Length);
 
             for (int i = 0; i < count; i++)
             {
-                waypoints.Add(allWaypoints[Random.Range(0, allWaypoints.Length)].transform);
+                waypoints.Add(m_cachedWaypoints[Random.Range(0, m_cachedWaypoints.Length)].transform);
             }
 
             return waypoints.ToArray();

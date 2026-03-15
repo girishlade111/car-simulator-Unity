@@ -30,6 +30,11 @@ namespace CarSimulator.Missions
         [Header("Triggers")]
         [SerializeField] private List<MissionTrigger> m_registeredTriggers = new List<MissionTrigger>();
 
+        [Header("Cached References")]
+        [SerializeField] private World.ApartmentEntrance[] m_cachedApartments;
+        [SerializeField] private float m_apartmentCacheRefreshInterval = 30f;
+        [SerializeField] private float m_lastApartmentCacheTime;
+
         public event System.Action<DriveMissionData> OnMissionStarted;
         public event System.Action<DriveMissionData> OnMissionCompleted;
         public event System.Action<string> OnMissionFailed;
@@ -49,14 +54,26 @@ namespace CarSimulator.Missions
         {
             FindPlayer();
             InitializeObjectiveUI();
+            RefreshApartmentCache();
         }
 
         private void Update()
         {
             if (!m_isMissionActive) return;
 
+            if (Time.time - m_lastApartmentCacheTime > m_apartmentCacheRefreshInterval)
+            {
+                RefreshApartmentCache();
+            }
+
             UpdateMission();
             CheckTriggers();
+        }
+
+        private void RefreshApartmentCache()
+        {
+            m_cachedApartments = FindObjectsOfType<World.ApartmentEntrance>();
+            m_lastApartmentCacheTime = Time.time;
         }
 
         private void FindPlayer()
@@ -194,8 +211,12 @@ namespace CarSimulator.Missions
 
         private World.ApartmentEntrance GetApartmentAtPosition()
         {
-            var apartments = FindObjectsOfType<World.ApartmentEntrance>();
-            foreach (var apt in apartments)
+            if (m_cachedApartments == null || m_cachedApartments.Length == 0)
+            {
+                RefreshApartmentCache();
+            }
+
+            foreach (var apt in m_cachedApartments)
             {
                 if (Vector3.Distance(m_playerTransform.position, apt.transform.position) < 10f)
                 {

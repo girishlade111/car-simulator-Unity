@@ -12,6 +12,7 @@ namespace CarSimulator.World
         [SerializeField] private float m_interactionRange = 3f;
         [SerializeField] private KeyCode m_interactionKey = KeyCode.E;
         [SerializeField] private LayerMask m_interactableLayer = -1;
+        [SerializeField] private float m_updateInterval = 0.1f;
 
         [Header("UI")]
         [SerializeField] private bool m_showPrompts = true;
@@ -21,6 +22,7 @@ namespace CarSimulator.World
 
         private List<WorldInteractable> m_nearbyInteractables = new List<WorldInteractable>();
         private WorldInteractable m_closestInteractable;
+        private float m_lastUpdateTime;
 
         private void Awake()
         {
@@ -41,7 +43,12 @@ namespace CarSimulator.World
         {
             if (!m_enabled) return;
 
-            UpdateNearbyInteractables();
+            if (Time.time - m_lastUpdateTime > m_updateInterval)
+            {
+                UpdateNearbyInteractables();
+                m_lastUpdateTime = Time.time;
+            }
+
             HandleInput();
         }
 

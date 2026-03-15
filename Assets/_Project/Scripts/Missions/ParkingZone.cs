@@ -130,10 +130,12 @@ namespace CarSimulator.Missions
         [Header("Settings")]
         [SerializeField] private bool m_autoFindZones = true;
         [SerializeField] private List<ParkingZone> m_parkingZones = new List<ParkingZone>();
+        [SerializeField] private float m_updateInterval = 0.5f;
 
         [Header("State")]
         [SerializeField] private ParkingZone m_nearestZone;
         [SerializeField] private float m_nearestDistance;
+        [SerializeField] private float m_lastUpdateTime;
 
         private Transform m_playerTransform;
 
@@ -164,7 +166,11 @@ namespace CarSimulator.Missions
 
         private void Update()
         {
-            UpdateNearestZone();
+            if (Time.time - m_lastUpdateTime > m_updateInterval)
+            {
+                UpdateNearestZone();
+                m_lastUpdateTime = Time.time;
+            }
         }
 
         private void UpdateNearestZone()
